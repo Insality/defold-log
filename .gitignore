@@ -1,0 +1,7 @@
+/.internal
+/build
+.DS_Store
+Thumbs.db
+deployer_version_settings.txt
+
+.deployer_cache

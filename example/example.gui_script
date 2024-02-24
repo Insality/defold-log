@@ -1,0 +1,54 @@
+local log = require("log.log")
+
+local logger = log.get_logger("game.logger", "TRACE")
+local logger_two = log.get_logger("game.logger_two", "TRACE")
+
+
+local function expensiveOperation()
+	for index = 1, 1000000 do
+		local a = { a = "s" }
+	end
+end
+
+
+function init(self)
+	logger:trace("init")
+
+	logger:debug("Debug message", {
+		value = 2, debug = "message"
+	})
+
+	logger:info("Here is some info", logger)
+	logger_two:info("Here is some info", logger)
+	logger:info("Here is some info", logger)
+	logger_two:info("Here is some info", logger)
+
+	-- Now we logger show the memory about for this table allocation
+	local t = { "one", "two", "three" }
+
+	logger:info("Here is some info", logger)
+	logger:warn("This is a warning", log)
+	logger:error("This is an error", "just string")
+
+	timer.delay(0.5, false, function()
+		logger:info("Delayed message", "just string")
+		timer.delay(1/6, true, function()
+			logger:info("Repeated message")
+		end)
+	end)
+
+
+	logger:trace("Trace message")
+	logger:debug("Debug message", {key = "value"})
+	logger:info("Info message", {key = "value"})
+	logger:warn("Warn message", {key = "value"})
+	logger:error("Error message", {key = "value"})
+
+
+	logger:info("Table to string", { inner_table = { a = 1, b = 2, c = { d = 3, e = 4 } }})
+
+
+	logger:trace("Before expensive operation")
+	expensiveOperation()
+	logger:trace("After expensive operation")
+end
