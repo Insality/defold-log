@@ -121,22 +121,19 @@ function Logger:format(level, message, context)
 	local string_info_block = level == ERROR and INFO_BLOCK_RAW or INFO_BLOCK
 	if IS_FORMAT_DIFFMEM then
 		local current_memory = collectgarbage("count")
-		self._last_gc_memory = self._last_gc_memory or current_memory
 		local diff_memory = math.max(current_memory - self._last_gc_memory, 0)
 
 		string_info_block = string_m.gsub(string_info_block, "%%diffmem", string.format("%04.1f", diff_memory))
 	end
-	if IS_FORMAT_LOGGER then
-		string_info_block = string_m.gsub(string_info_block, "%%logger", self.name)
-	end
 	if IS_FORMAT_DIFFTIME then
 		-- Debug time tracking (in ms)
 		local current_time = socket.gettime()
-		self._last_message_time = self._last_message_time or current_time
 		local diff_time = math.floor((current_time - self._last_message_time) * 1000000) / 1000
-		self._last_message_time = current_time
 
 		string_info_block = string_m.gsub(string_info_block, "%%difftime", string.format("%06.2f", diff_time))
+	end
+	if IS_FORMAT_LOGGER then
+		string_info_block = string_m.gsub(string_info_block, "%%logger", self.name)
 	end
 	if IS_FORMAT_LEVEL_SHORT then
 		string_info_block = string_m.gsub(string_info_block, "%%levelshort", LEVEL_SHORT_NAME[level])
@@ -175,13 +172,7 @@ function Logger:format(level, message, context)
 		string_message_block = string_m.gsub(string_message_block, "%%function", caller_info.short_src .. ":" .. caller_info.currentline)
 	end
 
-	local result = string_info_block .. string_message_block
-
-	if IS_FORMAT_DIFFMEM then
-		self._last_gc_memory = collectgarbage("count")
-	end
-
-	return result
+	return string_info_block .. string_message_block
 end
 
 
@@ -202,6 +193,14 @@ function Logger:log(level, message, context)
 			io.stdout:write(log_message, "\n")
 			io.stdout:flush()
 		end
+	end
+
+	if IS_FORMAT_DIFFMEM then
+		self._last_gc_memory = collectgarbage("count")
+	end
+
+	if IS_FORMAT_DIFFTIME then
+		self._last_message_time = socket.gettime()
 	end
 end
 
@@ -255,6 +254,14 @@ function Log.get_logger(logger_name, force_logger_level_in_debug)
 		name = logger_name or "",
 		level = force_logger_level_in_debug or GAME_LOG_LEVEL,
 	}
+
+	if IS_FORMAT_DIFFMEM then
+		instance._last_gc_memory = collectgarbage("count")
+	end
+
+	if IS_FORMAT_DIFFTIME then
+		instance._last_message_time = socket.gettime()
+	end
 
 	if not IS_DEBUG then
 		if LEVEL_PRIORITY[instance.level] < LEVEL_PRIORITY[GAME_LOG_LEVEL] then
