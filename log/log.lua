@@ -12,8 +12,8 @@ local IS_MOBILE = SYSTEM_NAME == "iPhone OS" or SYSTEM_NAME == "Android"
 local DEFAULT_LEVEL = IS_DEBUG and "DEBUG" or "WARN"
 local GAME_LOG_LEVEL = sys.get_config_string(IS_DEBUG and "log.level" or "log.level_release", DEFAULT_LEVEL)
 
-local IS_TIME_TRACK = sys.get_config_int("log.time_tracking", 0) == 1
-local IS_MEMORY_TRACK = sys.get_config_int("log.memory_tracking", 0) == 1
+local IS_TIME_TRACK = IS_DEBUG and sys.get_config_int("log.time_tracking", 0) == 1
+local IS_MEMORY_TRACK = IS_DEBUG and sys.get_config_int("log.memory_tracking", 0) == 1
 local INFO_BLOCK_LENGTH = sys.get_config_int("log.info_block_length", 18)
 
 local LOGGER_PREFIX = ""
