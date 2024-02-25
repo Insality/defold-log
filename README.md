@@ -28,7 +28,7 @@ Open your `game.project` file and add the following line to the dependencies fie
 https://github.com/Insality/defold-log/archive/refs/tags/1.zip
 ```
 
-Size: **4.04 KB**
+Size: **4.11 KB**
 
 ### Configuration
 
