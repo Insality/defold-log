@@ -28,7 +28,7 @@ Open your `game.project` file and add the following line to the dependencies fie
 https://github.com/Insality/defold-log/archive/refs/tags/1.zip
 ```
 
-Size: **4.04 KB**
+Size: **4.11 KB**
 
 ### Configuration
 
@@ -51,8 +51,8 @@ This configuration section for `game.project` defines various settings:
 
 - **level**: Sets the default logging level for development builds. In this case, `DEBUG` level logs will be shown, including more detailed information useful during development.
 - **level_release**: Determines the logging level for release builds, where `WARN` and above levels will be logged, focusing on warnings and errors that are critical for a production environment.
-- **memory_tracking**: Enables (`1`) or disables (`0`) memory tracking, allowing logs to include information about memory allocations which can be useful for identifying memory leaks or unexpected memory usage.
-- **time_tracking**: Enables (`1`) or disables (`0`) time tracking, which adds execution time information to the logs, useful for performance analysis and identifying slow operations.
+- **memory_tracking**: Enables (`1`) or disables (`0`) memory tracking, allowing logs to include information about memory allocations which can be useful for identifying memory leaks or unexpected memory usage. Works only in debug mode.
+- **time_tracking**: Enables (`1`) or disables (`0`) time tracking, which adds execution time information to the logs, useful for performance analysis and identifying slow operations. Works only in debug mode.
 - **info_block_length**: Specifies the fixed length for the info block portion of the log message, ensuring a uniform appearance in log outputs.
 - **info_block**: Defines the format of the info block in log messages, which includes the log level and logger name in this configuration.
 - **message_block**: Sets the format for the message block, including the actual log message, any context provided, and the function from which the log was called.
@@ -70,13 +70,19 @@ In the `[log]` configuration section for `game.project`, the `info_block` and `m
 - **%context**: Any additional context provided along with the log message. It can be useful for providing extra information relevant to the log message (e.g., variable values, state information).
 - **%function**: The function name or location from where the log message was generated. Helps in pinpointing where in the codebase a particular log message is coming from, aiding in debugging.
 
+
 ### Memory Tracking
 
 With `memory_tracking` enabled in `game.project`, log messages prepend memory usage, showing allocations since the last entry in this logger instance, e.g., `0.12kb [game.logger]: My log message`. Without this, logs exclude memory data for simpler output.
 
+Works only in debug mode, automatically disabled in release mode.
+
+
 ### Time Tracking
 
 When `time_tracking` is active, logs start with a timestamp in milliseconds to indicate the time elapsed since the last entry in this logger instance, like `0.01ms [game.logger]: Event triggered`. Disabling it removes this timing information.
+
+Works only in debug mode, automatically disabled in release mode.
 
 
 ### Using Native UTF8 Extension
