@@ -99,6 +99,20 @@ https://github.com/d954mas/defold-utf8/archive/master.zip
 The Log module automatically detects the presence of the native UTF8 extension and uses it if available. If the extension is not present, the Log module will use the built-in string functions.
 
 
+### Using High Resolution Timer Extension
+
+The Log module can utilize the Chronos extension for Defold to enable time tracking with microsecond or better precision (`QueryPerformanceCounter` on Windows). This is optional.
+
+If you want to use the extension, add the following line to the dependencies field in your `game.project` file:
+
+**[defold-chronos](https://github.com/d954mas/defold-chronos/archive/refs/tags/1.0.1.zip)**
+```
+https://github.com/d954mas/defold-chronos/archive/refs/tags/1.0.1.zip
+```
+
+The Log module automatically detects the presence of the extension and uses it if available. If the extension is not present, the Log module will use the built-in `socket.gettime` function.
+
+
 ## API Documentation
 
 ### Setup and Initialization

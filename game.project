@@ -17,6 +17,7 @@ version = 1
 publisher = Insality
 developer = Maksim Tuprikov, Insality
 dependencies#0 = https://github.com/d954mas/defold-utf8/archive/master.zip
+dependencies#1 = https://github.com/d954mas/defold-chronos/archive/refs/tags/1.0.1.zip
 
 [library]
 include_dirs = log
