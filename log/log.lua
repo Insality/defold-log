@@ -17,9 +17,20 @@ local IS_MEMORY_TRACK = IS_DEBUG and sys.get_config_int("log.memory_tracking", 0
 local INFO_BLOCK_LENGTH = sys.get_config_int("log.info_block_length", 18)
 
 local LOGGER_PREFIX = ""
+local time_fn
+local TIME_FORMAT
 if IS_TIME_TRACK then
 	LOGGER_PREFIX = LOGGER_PREFIX .. "%difftimems "
-	INFO_BLOCK_LENGTH = INFO_BLOCK_LENGTH + 9
+	--- If microsecond timer is available, use it, otherwise use built-in millisecond timer
+	if chronos then
+		time_fn = chronos.nanotime
+		TIME_FORMAT = "%08.4f"
+		INFO_BLOCK_LENGTH = INFO_BLOCK_LENGTH + 11
+	else
+		time_fn = socket.gettime
+		TIME_FORMAT = "%06.2f"
+		INFO_BLOCK_LENGTH = INFO_BLOCK_LENGTH + 9
+	end
 end
 if IS_MEMORY_TRACK then
 	LOGGER_PREFIX = LOGGER_PREFIX .. "%diffmemkb "
@@ -119,6 +130,7 @@ local Logger = {}
 function Logger:format(level, message, context)
 	-- Format info block
 	local string_info_block = level == ERROR and INFO_BLOCK_RAW or INFO_BLOCK
+	local current_time = IS_TIME_TRACK and time_fn()
 	if IS_FORMAT_DIFFMEM then
 		local current_memory = collectgarbage("count")
 		local diff_memory = math.max(current_memory - self._last_gc_memory, 0)
@@ -127,10 +139,9 @@ function Logger:format(level, message, context)
 	end
 	if IS_FORMAT_DIFFTIME then
 		-- Debug time tracking (in ms)
-		local current_time = socket.gettime()
-		local diff_time = math.floor((current_time - self._last_message_time) * 1000000) / 1000
+		local diff_time = (current_time - self._last_message_time) * 1000
 
-		string_info_block = string_m.gsub(string_info_block, "%%difftime", string.format("%06.2f", diff_time))
+		string_info_block = string_m.gsub(string_info_block, "%%difftime", string.format(TIME_FORMAT, diff_time))
 	end
 	if IS_FORMAT_LOGGER then
 		string_info_block = string_m.gsub(string_info_block, "%%logger", self.name)
@@ -200,7 +211,7 @@ function Logger:log(level, message, context)
 	end
 
 	if IS_FORMAT_DIFFTIME then
-		self._last_message_time = socket.gettime()
+		self._last_message_time = time_fn()
 	end
 end
 
@@ -260,7 +271,7 @@ function Log.get_logger(logger_name, force_logger_level_in_debug)
 	end
 
 	if IS_FORMAT_DIFFTIME then
-		instance._last_message_time = socket.gettime()
+		instance._last_message_time = time_fn()
 	end
 
 	if not IS_DEBUG then
