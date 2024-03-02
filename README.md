@@ -22,13 +22,13 @@
 
 Open your `game.project` file and add the following line to the dependencies field under the project section:
 
-**[Log v1](https://github.com/Insality/defold-log/archive/refs/tags/1.zip)**
+**[Log v2](https://github.com/Insality/defold-log/archive/refs/tags/2.zip)**
 
 ```
-https://github.com/Insality/defold-log/archive/refs/tags/1.zip
+https://github.com/Insality/defold-log/archive/refs/tags/2.zip
 ```
 
-Size: **4.11 KB**
+Size: **4.28 KB**
 
 ### Configuration
 
@@ -266,6 +266,13 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 For any issues, questions, or suggestions, please [create an issue](https://github.com/Insality/defold-log/issues).
 
 To contribute, please look for issues tagged with `[Contribute]`, solve them, and submit a PR focusing on performance and code style for efficient and maintainable enhancements. Your contributions are greatly appreciated!
+
+
+## 👏 Contributors
+
+<a href="https://github.com/Insality/defold-log/graphs/contributors">
+  <img src="https://contributors-img.web.app/image?repo=insality/defold-log"/>
+</a>
 
 
 ## ❤️ Support the Project ❤️
