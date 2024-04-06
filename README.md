@@ -56,6 +56,7 @@ This configuration section for `game.project` defines various settings:
 - **info_block_length**: Specifies the fixed length for the info block portion of the log message, ensuring a uniform appearance in log outputs.
 - **info_block**: Defines the format of the info block in log messages, which includes the log level and logger name in this configuration.
 - **message_block**: Sets the format for the message block, including the actual log message, any context provided, and the function from which the log was called.
+- **max_log_length**: The maximum length of the log message. If the message exceeds this length, it will be truncated. Default is 512.
 
 In the `[log]` configuration section for `game.project`, the `info_block` and `message_block` fields allow for dynamic content based on specific placeholders. These placeholders get replaced with actual log information at runtime, providing structured and informative log messages.
 
@@ -91,7 +92,7 @@ The Log module can utilize the native UTF8 extension for Defold to handle UTF-8 
 
 If you want to use the native UTF8 extension, add the following line to the dependencies field in your `game.project` file:
 
-**[defold-utf8](https://github.com/d954mas/defold-utf8/archive/master.zip)**
+**[defold-utf8](https://github.com/d954mas/defold-utf8)**
 ```
 https://github.com/d954mas/defold-utf8/archive/master.zip
 ```
@@ -105,7 +106,7 @@ The Log module can utilize the Chronos extension for Defold to enable time track
 
 If you want to use the extension, add the following line to the dependencies field in your `game.project` file:
 
-**[defold-chronos](https://github.com/d954mas/defold-chronos/archive/refs/tags/1.0.1.zip)**
+**[defold-chronos](https://github.com/d954mas/defold-chronos)**
 ```
 https://github.com/d954mas/defold-chronos/archive/refs/tags/1.0.1.zip
 ```

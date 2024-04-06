@@ -15,6 +15,7 @@ local GAME_LOG_LEVEL = sys.get_config_string(IS_DEBUG and "log.level" or "log.le
 local IS_TIME_TRACK = IS_DEBUG and sys.get_config_int("log.time_tracking", 0) == 1
 local IS_MEMORY_TRACK = IS_DEBUG and sys.get_config_int("log.memory_tracking", 0) == 1
 local INFO_BLOCK_LENGTH = sys.get_config_int("log.info_block_length", 18)
+local MAX_LOG_LENGTH = sys.get_config_int("log.max_log_length", 512)
 
 local LOGGER_PREFIX = ""
 local time_fn
@@ -82,15 +83,14 @@ local LEVEL_PRIORITY = {
 ---@param depth number
 ---@param result string|nil @Internal parameter
 ---@return string, boolean @String representation of table, Is max string length reached
-local MAX_STRING_LENGTH = 250
 local function table_to_string(t, depth, result)
 	if not t then return "" end
 
 	depth = depth or 0
 	result = result or "{"
 
-	if #result > MAX_STRING_LENGTH then
-		return result:sub(1, MAX_STRING_LENGTH) .. " ...}", true
+	if #result > MAX_LOG_LENGTH then
+		return result:sub(1, MAX_LOG_LENGTH) .. " ...}", true
 	end
 
 	for key, value in pairs(t) do
@@ -113,8 +113,8 @@ local function table_to_string(t, depth, result)
 		end
 	end
 
-	if #result > MAX_STRING_LENGTH then
-		return result:sub(1, MAX_STRING_LENGTH) .. " ...}", true
+	if #result > MAX_LOG_LENGTH then
+		return result:sub(1, MAX_LOG_LENGTH) .. " ...}", true
 	end
 
 	return result .. "}"
