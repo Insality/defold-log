@@ -57,6 +57,7 @@ This configuration section for `game.project` defines various settings:
 - **info_block**: Defines the format of the info block in log messages, which includes the log level and logger name in this configuration.
 - **message_block**: Sets the format for the message block, including the actual log message, any context provided, and the function from which the log was called.
 - **max_log_length**: The maximum length of the log message. If the message exceeds this length, it will be truncated. Default is 512.
+- **inspect_depth**: The maximum depth of nested tables to inspect when logging. Default is 1.
 
 In the `[log]` configuration section for `game.project`, the `info_block` and `message_block` fields allow for dynamic content based on specific placeholders. These placeholders get replaced with actual log information at runtime, providing structured and informative log messages.
 
