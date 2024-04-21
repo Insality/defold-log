@@ -22,10 +22,10 @@
 
 Open your `game.project` file and add the following line to the dependencies field under the project section:
 
-**[Log v2](https://github.com/Insality/defold-log/archive/refs/tags/2.zip)**
+**[Log v3](https://github.com/Insality/defold-log/archive/refs/tags/3.zip)**
 
 ```
-https://github.com/Insality/defold-log/archive/refs/tags/2.zip
+https://github.com/Insality/defold-log/archive/refs/tags/3.zip
 ```
 
 Size: **4.28 KB**
