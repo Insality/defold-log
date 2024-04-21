@@ -15,7 +15,7 @@ local GAME_LOG_LEVEL = sys.get_config_string(IS_DEBUG and "log.level" or "log.le
 local IS_TIME_TRACK = IS_DEBUG and sys.get_config_int("log.time_tracking", 0) == 1
 local IS_MEMORY_TRACK = IS_DEBUG and sys.get_config_int("log.memory_tracking", 0) == 1
 local INFO_BLOCK_LENGTH = sys.get_config_int("log.info_block_length", 18)
-local MAX_LOG_LENGTH = sys.get_config_int("log.max_log_length", 512)
+local MAX_LOG_LENGTH = sys.get_config_int("log.max_log_length", 1024)
 local INSPECT_DEPTH = sys.get_config_int("log.inspect_depth", 1)
 
 local LOGGER_PREFIX = ""

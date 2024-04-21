@@ -277,6 +277,32 @@ To contribute, please look for issues tagged with `[Contribute]`, solve them, an
 </a>
 
 
+## Changelog
+
+### **V1**
+<details>
+	<summary><b>Changelog</b></summary>
+
+	- Initial release
+</details>
+
+### **V2**
+<details>
+	<summary><b>Changelog</b></summary>
+
+	- Add chronos extension support
+</details>
+
+
+### **V3**
+<details>
+	<summary><b>Changelog</b></summary>
+
+	- [#1] Add inspect_depth settings to game.project
+	- [#2] Add max_log_length settings to game.project
+</details>
+
+
 ## ❤️ Support the Project ❤️
 
 Your support motivates me to keep creating and maintaining projects for **Defold**. Consider supporting if you find my projects helpful and valuable.
