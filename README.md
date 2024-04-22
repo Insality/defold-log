@@ -28,7 +28,14 @@ Open your `game.project` file and add the following line to the dependencies fie
 https://github.com/Insality/defold-log/archive/refs/tags/3.zip
 ```
 
-Size: **4.28 KB**
+### Library Size
+
+> **Note:** The library size is calculated based on the build report per platform
+
+| Platform         | Library Size |
+| ---------------- | ------------ |
+| HTML5            | **2.54 KB**  |
+| Desktop / Mobile | **4.37 KB**  |
 
 ### Configuration
 
