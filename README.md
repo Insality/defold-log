@@ -35,7 +35,7 @@ https://github.com/Insality/defold-log/archive/refs/tags/3.zip
 | Platform         | Library Size |
 | ---------------- | ------------ |
 | HTML5            | **2.54 KB**  |
-| Desktop / Mobile | **4.37 KB**  |
+| Desktop / Mobile | **4.28 KB**  |
 
 ### Configuration
 
@@ -52,6 +52,8 @@ memory_tracking = 0
 info_block_length = 18
 info_block = %levelshort[%logger
 message_block = ]: %message %context %tab<%function>
+max_log_length = 512
+inspect_depth = 1
 ```
 
 This configuration section for `game.project` defines various settings:
