@@ -126,6 +126,17 @@ The Log module automatically detects the presence of the extension and uses it i
 
 ## API Documentation
 
+### Quick API Reference
+
+```lua
+log.get_logger(logger_name, [force_logger_level_in_debug])
+logger:trace(message, [data])
+logger:debug(message, [data])
+logger:info(message, [data])
+logger:warn(message, [data])
+logger:error(message, [data])
+```
+
 ### Setup and Initialization
 
 To start using the Log module in your project, you first need to import it. This can be done with the following line of code:
