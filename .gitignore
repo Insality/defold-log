@@ -5,3 +5,5 @@ Thumbs.db
 deployer_version_settings.txt
 
 .deployer_cache
+manifest.public.der
+manifest.private.der
