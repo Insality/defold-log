@@ -127,8 +127,8 @@ end
 ---@class logger
 ---@field name string
 ---@field level string
----@field _last_gc_memory number
----@field _last_message_time number
+---@field private _last_gc_memory number
+---@field private _last_message_time number
 local Logger = {}
 
 ---@param level string @TRACE, DEBUG, INFO, WARN, ERROR
