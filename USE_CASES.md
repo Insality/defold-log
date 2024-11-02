@@ -108,3 +108,19 @@ logger:warn("Something happened here:", {
 ```
 
 This allow to users of your library to set their logger instance and catch logs from your library.
+
+
+## 6. Using log module as a logger itself
+
+```lua
+local log = require("log.log")
+
+--- You can invoke a log module itself to write log message
+--- The logger name will be equals to project.title field from game.project
+--- But general practice is to create specific logger for each module
+log:trace("message", { foo = bar })
+log:debug("message", { foo = bar })
+log:info("message", { foo = bar })
+log:warn("message", { foo = bar })
+log:error("message", { foo = bar })
+```

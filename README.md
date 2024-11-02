@@ -129,7 +129,9 @@ The Log module automatically detects the presence of the extension and uses it i
 ### Quick API Reference
 
 ```lua
-log.get_logger(logger_name, [force_logger_level_in_debug])
+local log = require("log.log")
+
+local logger = log.get_logger(logger_name, [force_logger_level_in_debug])
 logger:trace(message, [data])
 logger:debug(message, [data])
 logger:info(message, [data])
@@ -144,6 +146,8 @@ To start using the Log module in your project, you first need to import it. This
 ```lua
 local log = require("log.log")
 ```
+
+> The log module itself is logger instance with name equals to `project.title`. All `logger` methods can be invoked on `log` module itself. But general practice it to create a specific logger for each module.
 
 ### Core Functions
 
