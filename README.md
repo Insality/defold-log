@@ -22,10 +22,10 @@
 
 Open your `game.project` file and add the following line to the dependencies field under the project section:
 
-**[Log v3](https://github.com/Insality/defold-log/archive/refs/tags/3.zip)**
+**[Log v3](https://github.com/Insality/defold-log/archive/refs/tags/4.zip)**
 
 ```
-https://github.com/Insality/defold-log/archive/refs/tags/3.zip
+https://github.com/Insality/defold-log/archive/refs/tags/4.zip
 ```
 
 ### Library Size
@@ -303,27 +303,21 @@ To contribute, please look for issues tagged with `[Contribute]`, solve them, an
 
 ## Changelog
 
-### **V1**
 <details>
-	<summary><b>Changelog</b></summary>
 
-	- Initial release
-</details>
+### **V1**
+- Initial release
 
 ### **V2**
-<details>
-	<summary><b>Changelog</b></summary>
-
-	- Add chronos extension support
-</details>
-
+- Add chronos extension support
 
 ### **V3**
-<details>
-	<summary><b>Changelog</b></summary>
+- [#1] Add inspect_depth settings to game.project
+- [#2] Add max_log_length settings to game.project
 
-	- [#1] Add inspect_depth settings to game.project
-	- [#2] Add max_log_length settings to game.project
+### **V4**
+- Now log module can be used as logger itself
+
 </details>
 
 
