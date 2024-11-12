@@ -85,7 +85,9 @@ local LEVEL_PRIORITY = {
 ---@param result string|nil @Internal parameter
 ---@return string, boolean @String representation of table, Is max string length reached
 local function table_to_string(t, depth, result)
-	if not t then return "" end
+	if not t then
+		return "", false
+	end
 
 	depth = depth or 0
 	result = result or "{"
@@ -118,10 +120,15 @@ local function table_to_string(t, depth, result)
 		return result:sub(1, MAX_LOG_LENGTH) .. " ...}", true
 	end
 
-	return result .. "}"
+	return result .. "}", false
 end
 
 
+---@class logger
+---@field name string
+---@field level string
+---@field private _last_gc_memory number
+---@field private _last_message_time number
 local Logger = {}
 
 ---@param level string @TRACE, DEBUG, INFO, WARN, ERROR
@@ -285,4 +292,7 @@ function Log.get_logger(logger_name, force_logger_level_in_debug)
 end
 
 
-return Log
+local DEFAULT_LOGGER = Log.get_logger(sys.get_config_string("project.title", "log"))
+return setmetatable(Log, {
+	__index = DEFAULT_LOGGER,
+})
