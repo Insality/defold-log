@@ -36,7 +36,7 @@ function init(self)
 			if math.random() > 0.4 then
 				logger:info("Delayed message", "just string")
 			else
-				logger:debug("Delayed message", "just string")
+				log:debug("Delayed message", "just string")
 			end
 		end)
 	end)
@@ -51,16 +51,13 @@ function init(self)
 		logger_two:info("Second Plus")
 	end)
 
-
 	logger:trace("Trace message")
 	logger:debug("Debug message", {key = "value"})
 	logger:info("Info message", {key = "value"})
 	logger:warn("Warn message", {key = "value"})
 	logger:error("Error message", {key = "value"})
 
-
 	logger:info("Table to string", { inner_table = { a = 1, b = 2, c = { d = 3, e = 4 } }})
-
 
 	logger:trace("Before expensive operation")
 	expensiveOperation()

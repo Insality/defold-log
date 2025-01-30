@@ -26,6 +26,6 @@ include_dirs = log
 level = TRACE
 level_release = WARN
 logger_block_width = 16
-info_block = %levelname[%logger]
-message_block = %tab%message: %context %tab<%function>
+info_block = %levelname| %time_tracking | %memory_tracking | %logger
+message_block = | %tab%message: %context %tab<%function>
 

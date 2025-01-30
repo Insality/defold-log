@@ -2,13 +2,15 @@
 local string_m = utf8 or string
 
 ---@class log
+---@field name string
+---@field level string
 local M = {}
 
 local IS_DEBUG = sys.get_engine_info().is_debug
 local SYSTEM_NAME = sys.get_sys_info().system_name
 local IS_MOBILE = SYSTEM_NAME == "iPhone OS" or SYSTEM_NAME == "Android"
 
-local DEFAULT_LEVEL = IS_DEBUG and "DEBUG" or "WARN"
+local DEFAULT_LEVEL = IS_DEBUG and "TRACE" or "FATAL"
 local GAME_LOG_LEVEL = sys.get_config_string(IS_DEBUG and "log.level" or "log.level_release", DEFAULT_LEVEL)
 
 local LOGGER_BLOCK_WIDTH = sys.get_config_int("log.logger_block_width", 10)
@@ -27,7 +29,7 @@ local IS_CHRONOS_TRACK = IS_DEBUG and string_m.find(sys.get_config_string("log.i
 
 -- Info: %levelname| %time_tracking | %memory_tracking | %logger
 -- Message: | %tab%message: %context %tab<%function>
--- Preview: DEBUG:| 166.71ms |   2.4kb | game.logger      :	Delayed message: just string 	<example/example.gui_script:39>
+-- Preview: DEBUG:| 166.71ms |   2.4kb | game.logger      |	Delayed message: just string 	<example/example.gui_script:39>
 
 local INFO_BLOCK = sys.get_config_string("log.info_block", "%levelname| %time_tracking | %memory_tracking | %logger")
 local MESSAGE_BLOCK = sys.get_config_string("log.message_block", "%tab%message %context %tab<%function>")
@@ -110,18 +112,18 @@ local function table_to_string(t, depth, result)
 end
 
 
----@class logger
+---@class logger: log
 ---@field name string
 ---@field level string
 ---@field private _last_gc_memory number
 ---@field private _last_message_time number
-local Logger = {}
+
 
 ---@param level string TRACE, DEBUG, INFO, WARN, ERROR
 ---@param message string Message to log
 ---@param context any Additional data to log
 ---@return string|nil
-function Logger:format(level, message, context)
+function M:format(level, message, context)
 	-- Format info block
 	local string_info_block = INFO_BLOCK
 
@@ -142,6 +144,7 @@ function Logger:format(level, message, context)
 
 		string_info_block = string_m.gsub(string_info_block, "%%memory_tracking", string.format(format, diff_memory))
 	end
+
 	if IS_TIME_TRACK then
 		local format = "%6.2fms"
 		local diff_time = (socket.gettime() - self._last_message_time) * 1000
@@ -212,7 +215,7 @@ end
 ---@param level string TRACE, DEBUG, INFO, WARN, ERROR
 ---@param message string Message to log
 ---@param context any Additional data to log
-function Logger:log(level, message, context)
+function M:log(level, message, context)
 	if LEVEL_PRIORITY[level] > LEVEL_PRIORITY[self.level] then
 		return nil
 	end
@@ -245,7 +248,7 @@ end
 ---Log message with TRACE level
 ---@param message string Message to log
 ---@param data any
-function Logger:trace(message, data)
+function M:trace(message, data)
 	self:log(TRACE, message, data)
 end
 
@@ -253,7 +256,7 @@ end
 ---Log message with DEBUG level
 ---@param message string Message to log
 ---@param data any
-function Logger:debug(message, data)
+function M:debug(message, data)
 	self:log(DEBUG, message, data)
 end
 
@@ -261,7 +264,7 @@ end
 ---Log message with INFO level
 ---@param message string
 ---@param data any
-function Logger:info(message, data)
+function M:info(message, data)
 	self:log(INFO, message, data)
 end
 
@@ -269,7 +272,7 @@ end
 ---Log message with WARN level
 ---@param message string
 ---@param data any
-function Logger:warn(message, data)
+function M:warn(message, data)
 	self:log(WARN, message, data)
 end
 
@@ -277,7 +280,7 @@ end
 ---Log message with ERROR level
 ---@param message string
 ---@param data any
-function Logger:error(message, data)
+function M:error(message, data)
 	self:log(ERROR, message, data)
 end
 
@@ -310,7 +313,7 @@ function M.get_logger(logger_name, force_logger_level_in_debug)
 		end
 	end
 
-	return setmetatable(instance, { __index = Logger })
+	return setmetatable(instance, { __index = M }) --[[@as logger]]
 end
 
 
