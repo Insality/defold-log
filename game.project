@@ -23,9 +23,9 @@ dependencies#1 = https://github.com/d954mas/defold-chronos/archive/refs/tags/1.0
 include_dirs = log
 
 [log]
-level = ERROR
+level = TRACE
 level_release = WARN
 logger_block_width = 16
-info_block = %levelname [%logger]: %time_tracking %memory_tracking %chronos_tracking
-message_block = %tab%message %context %tab<%function>
+info_block = %levelname[%logger]
+message_block = %tab%message: %context %tab<%function>
 
