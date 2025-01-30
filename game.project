@@ -25,9 +25,7 @@ include_dirs = log
 [log]
 level = ERROR
 level_release = WARN
-time_tracking = 1
-memory_tracking = 1
-info_block_length = 18
-info_block = %levelshort[%logger
-message_block = ]: %message %context %tab<%function>
+logger_block_width = 16
+info_block = %levelname [%logger]: %time_tracking %memory_tracking %chronos_tracking
+message_block = %tab%message %context %tab<%function>
 
