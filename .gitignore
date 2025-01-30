@@ -4,6 +4,7 @@
 Thumbs.db
 deployer_version_settings.txt
 
+dist
 /.deployer_cache
 manifest.public.der
 manifest.private.der

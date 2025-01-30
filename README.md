@@ -34,8 +34,8 @@ https://github.com/Insality/defold-log/archive/refs/tags/4.zip
 
 | Platform         | Library Size |
 | ---------------- | ------------ |
-| HTML5            | **2.54 KB**  |
-| Desktop / Mobile | **4.28 KB**  |
+| HTML5            | **2.55 KB**  |
+| Desktop / Mobile | **4.29 KB**  |
 
 ### Configuration
 
@@ -366,6 +366,12 @@ To contribute, please look for issues tagged with `[Contribute]`, solve them, an
 
 ### **V4**
 - Now log module can be used as logger itself
+
+### **V5**
+- Add FATAL level for silent all logs
+- Changed module settings
+	- For better visualisation of logs in Defold Console with level highlighting
+
 
 </details>
 
