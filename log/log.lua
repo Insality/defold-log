@@ -33,12 +33,12 @@ local IS_CHRONOS_TRACK = IS_DEBUG and string_m.find(sys.get_config_string("log.i
 -- Message: | %tab%message: %context %tab<%function>
 -- Preview: DEBUG:| 166.71ms |   2.4kb | game.logger      |	Delayed message: just string 	<example/example.gui_script:39>
 
-local INFO_BLOCK = sys.get_config_string("log.info_block", "%levelname| %time_tracking | %memory_tracking | %logger")
+local INFO_BLOCK = sys.get_config_string("log.info_block", "%levelname[%logger]")
 local IS_FORMAT_LOGGER = string_m.find(INFO_BLOCK, "%%logger") ~= nil
 local IS_FORMAT_LEVEL_NAME = string_m.find(INFO_BLOCK, "%%levelname") ~= nil
 local IS_FORMAT_LEVEL_SHORT = string_m.find(INFO_BLOCK, "%%levelshort") ~= nil
 
-local MESSAGE_BLOCK = sys.get_config_string("log.message_block", "%tab%message %context %tab<%function>")
+local MESSAGE_BLOCK = sys.get_config_string("log.message_block", "%space%message: %context %tab<%function>")
 local IS_FORMAT_TAB = string_m.find(MESSAGE_BLOCK, "%%tab") ~= nil
 local IS_FORMAT_SPACE = string_m.find(MESSAGE_BLOCK, "%%space") ~= nil
 local IS_FORMAT_MESSAGE = string_m.find(MESSAGE_BLOCK, "%%message") ~= nil
