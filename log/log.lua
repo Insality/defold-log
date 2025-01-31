@@ -17,7 +17,7 @@ local IS_MOBILE = SYSTEM_NAME == "iPhone OS" or SYSTEM_NAME == "Android"
 local DEFAULT_LEVEL = IS_DEBUG and "TRACE" or "ERROR"
 local GAME_LOG_LEVEL = sys.get_config_string(IS_DEBUG and "log.level" or "log.level_release", DEFAULT_LEVEL)
 
-local LOGGER_BLOCK_WIDTH = sys.get_config_int("log.logger_block_width", 10)
+local LOGGER_BLOCK_WIDTH = sys.get_config_int("log.logger_block_width", 14)
 local MAX_LOG_LENGTH = sys.get_config_int("log.max_log_length", 1024)
 local INSPECT_DEPTH = sys.get_config_int("log.inspect_depth", 1)
 
@@ -118,6 +118,8 @@ local function table_to_string(t, depth, result)
 end
 
 
+---Format log message
+---@local
 ---@param level string TRACE, DEBUG, INFO, WARN, ERROR
 ---@param message string Message to log
 ---@param context any Additional data to log
@@ -215,9 +217,11 @@ function M:format(level, message, context)
 end
 
 
----@param level string TRACE, DEBUG, INFO, WARN, ERROR
----@param message string Message to log
----@param context any Additional data to log
+---Log message with specified level and message
+---@local
+---@param level string One of the next level: TRACE, DEBUG, INFO, WARN, ERROR
+---@param message string The log message.
+---@param context any Additional data to include with the log message.
 function M:log(level, message, context)
 	if LEVEL_PRIORITY[level] > LEVEL_PRIORITY[self.level] then
 		return nil

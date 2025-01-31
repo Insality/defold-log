@@ -56,29 +56,37 @@ inspect_depth = 1
 
 This configuration section for `game.project` defines various settings:
 
-- **level**: Sets the default logging level for development builds. In this case, `TRACE` and above levels will be logged, providing detailed information for debugging and monitoring.
-- **level_release**: Determines the logging level for release builds, where `ERROR` and above levels will be logged, focusing on warnings and errors that are critical for a production environment. Use `FATAL` to silence all logs.
-- **logger_block_width**: Defines the width of the logger block in log messages. This helps in aligning log messages for better readability.
-- **info_block**: Defines the format of the info block in log messages, which includes the log level and logger name in this configuration.
-- **message_block**: Sets the format for the message block, including the actual log message, any context provided, and the function from which the log was called.
-- **max_log_length**: The maximum length of the log message. If the message exceeds this length, it will be truncated. Default is 1024.
-- **inspect_depth**: The maximum depth of nested tables to inspect when logging. Default is 1.
+| Setting             | Description                                                                                                                                                                                                 |
+|---------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **level**           | Sets the default logging level for development builds. In this case, `TRACE` and above levels will be logged, providing detailed information for debugging and monitoring.                                   |
+| **level_release**   | Determines the logging level for release builds, where `ERROR` and above levels will be logged, focusing on warnings and errors that are critical for a production environment. Use `FATAL` to silence all logs. |
+| **info_block**      | Defines the format of the info block in log messages, which includes the log level and logger name in this configuration.                                                                                     |
+| **message_block**   | Sets the format for the message block, including the actual log message, any context provided, and the function from which the log was called.                                                               |
+| **logger_block_width** | Defines the width of the logger block in log messages. This helps in aligning log messages for better readability. Default is 14.                                                                          |
+| **max_log_length**  | The maximum length of the log message. If the message exceeds this length, it will be truncated. Default is 1024.                                                                                            |
+| **inspect_depth**   | The maximum depth of nested tables to inspect when logging. Default is 1.                                                                                                                                    |
 
 In the `[log]` configuration section for `game.project`, the `info_block` and `message_block` fields allow for dynamic content based on specific placeholders. These placeholders get replaced with actual log information at runtime, providing structured and informative log messages.
 
 #### Info Block Placeholders:
-- **%logger**: The name of the logger instance producing the log message. Helps in identifying the source of the log message.
-- **%levelname**: The name of the log level (e.g., DEBUG, INFO, WARN, etc.). Provides clarity on the severity or nature of the log message. Should be placed at the beginning of the log message for color highlighting in the Defold Console.
-- **%time_tracking**: The time elapsed since the last entry in this logger instance. Time tracking will be enabled, if this placeholder is used.
-- **%memory_tracking**: The memory allocated since the last entry in this logger instance. Memory tracking will be enabled, if this placeholder is used.
-- **%chronos_tracking**: The time elapsed since the last entry in this logger instance. Chronos extension will be used, if this placeholder is used.
+
+| Placeholder          | Description                                                                                                                                                                                                 |
+|----------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **%logger**          | The name of the logger instance producing the log message. Helps in identifying the source of the log message.                                                                                               |
+| **%levelname**       | The name of the log level (e.g., DEBUG, INFO, WARN, etc.). Provides clarity on the severity or nature of the log message. Should be placed at the beginning of the log message for color highlighting in the Defold Console. |
+| **%time_tracking**   | The time elapsed since the last entry in this logger instance. Time tracking will be enabled, if this placeholder is used.                                                                                   |
+| **%memory_tracking** | The memory allocated since the last entry in this logger instance. Memory tracking will be enabled, if this placeholder is used.                                                                             |
+| **%chronos_tracking**| The time elapsed since the last entry in this logger instance. Chronos extension will be used, if this placeholder is used.                                                                                  |
 
 #### Message Block Placeholders:
-- **%tab**: A tab character for formatting log messages.
-- **%space**: A space character for formatting log messages.
-- **%message**: The actual log message content. This is the primary information you want to log.
-- **%context**: Any additional context provided along with the log message. It can be useful for providing extra information relevant to the log message (e.g., variable values, state information).
-- **%function**: The function name or location from where the log message was generated. Helps in pinpointing where in the codebase a particular log message is coming from, aiding in debugging.
+
+| Placeholder  | Description                                                                                                                                                                                                 |
+|--------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **%tab**     | A tab character for formatting log messages.                                                                                                                                                                |
+| **%space**   | A space character for formatting log messages.                                                                                                                                                              |
+| **%message** | The actual log message content. This is the primary information you want to log.                                                                                                                            |
+| **%context** | Any additional context provided along with the log message. It can be useful for providing extra information relevant to the log message (e.g., variable values, state information).                        |
+| **%function**| The function name or location from where the log message was generated. Helps in pinpointing where in the codebase a particular log message is coming from, aiding in debugging.                             |
 
 
 #### Output Prefabs
@@ -129,20 +137,6 @@ This will include time tracking information in the log messages, showing the tim
 >DEBUG:|  0.01ms | game.logger      |	Delayed message: just string 	<example/example.gui_script:39>`.
 
 
-### Using Native UTF8 Extension
-
-The Log module can utilize the native UTF8 extension for Defold to handle UTF-8 strings. This is optional but recommended for better performance.
-
-If you want to use the native UTF8 extension, add the following line to the dependencies field in your `game.project` file:
-
-**[defold-utf8](https://github.com/d954mas/defold-utf8)**
-```
-https://github.com/d954mas/defold-utf8/archive/master.zip
-```
-
-The Log module automatically detects the presence of the native UTF8 extension and uses it if available. If the extension is not present, the Log module will use the built-in Lua string functions.
-
-
 ### Using High Resolution Timer Extension
 
 The Log module can utilize the Chronos extension for Defold to enable time tracking with microsecond or better precision (`QueryPerformanceCounter` on Windows). This is optional.
@@ -166,6 +160,19 @@ This will include time tracking information in the log messages, showing the tim
 >DEBUG:|  0.00001ms | game.logger      |	Delayed message: just string 	<example/example.gui_script:39>`.
 
 
+### Using Native UTF8 Extension
+
+The Log module can utilize the native UTF8 extension for Defold to handle UTF-8 strings. This is optional but recommended for better performance.
+
+If you want to use the native UTF8 extension, add the following line to the dependencies field in your `game.project` file:
+
+**[defold-utf8](https://github.com/d954mas/defold-utf8)**
+```
+https://github.com/d954mas/defold-utf8/archive/master.zip
+```
+
+The Log module automatically detects the presence of the native UTF8 extension and uses it if available. If the extension is not present, the Log module will use the built-in Lua string functions.
+
 ## API Documentation
 
 ### Quick API Reference
@@ -178,6 +185,7 @@ log:info(message, [data])
 log:warn(message, [data])
 log:error(message, [data])
 
+-- Create a new logger instance with a specific logger name
 local logger = log.get_logger(logger_name, [force_logger_level_in_debug])
 logger:trace(message, [data])
 logger:debug(message, [data])
@@ -322,7 +330,7 @@ function init(self)
     logger:trace("init")
     logger:debug("Debugging game start", { level = 1, start = true })
     logger:info("Game level loaded")
-    logger:warn("Unexpected behavior detected", { warning = "minor" })
+    logger:warn("Unexpected behavior detected", "context_can_be_any_type")
     logger:error("Critical error encountered", { error = "out of memory" })
 end
 
@@ -370,10 +378,9 @@ To contribute, please look for issues tagged with `[Contribute]`, solve them, an
 - Now log module can be used as logger itself
 
 ### **V5**
-- Add FATAL level for silent all logs
+- Add `FATAL` level for silent all logs
 - Changed module settings
 	- For better visualisation of logs in Defold Console with level highlighting
-
 
 </details>
 
