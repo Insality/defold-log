@@ -1,7 +1,7 @@
 local log = require("log.log")
 
-local logger = log.get_logger("game.logger", "TRACE")
-local logger_two = log.get_logger("game.logger_two", "TRACE")
+local logger = log.get_logger("game.logger")
+local logger_two = log.get_logger("game.logger_two")
 
 
 local function expensiveOperation()
@@ -33,10 +33,23 @@ function init(self)
 	timer.delay(0.5, false, function()
 		logger:info("Delayed message", "just string")
 		timer.delay(1/6, true, function()
-			logger:info("Repeated message")
+			if math.random() > 0.4 then
+				logger:info("Delayed message", "just string")
+			else
+				log:debug("Delayed message", "just string")
+			end
 		end)
 	end)
 
+	timer.delay(1.5, true, function()
+		local b = { "one", "two", "three" }
+		for index = 1, 4000 do
+			local a = {{}, {}, {}, {}}
+			table.insert(b, a)
+		end
+
+		logger_two:info("Second Plus")
+	end)
 
 	logger:trace("Trace message")
 	logger:debug("Debug message", {key = "value"})
@@ -44,9 +57,11 @@ function init(self)
 	logger:warn("Warn message", {key = "value"})
 	logger:error("Error message", {key = "value"})
 
-
-	logger:info("Table to string", { inner_table = { a = 1, b = 2, c = { d = 3, e = 4 } }})
-
+	logger:info("Table to string", { inner_table = {
+		a = 1,
+		b = 2,
+		c = { d = 3, e = 4 }
+	}})
 
 	logger:trace("Before expensive operation")
 	expensiveOperation()

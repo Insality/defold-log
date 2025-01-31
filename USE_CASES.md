@@ -21,8 +21,8 @@ end
 Output
 
 ```lua
-000.01ms 00.0kb T[game      ]: Before expensive operation  	<example/example.gui_script:48>
-553.63ms 49.7kb T[game      ]: After expensive operation  	<example/example.gui_script:50>
+TRACE:|   0.00ms |   0.0kb | game.logger     | 	Before expensive operation:  	<example/example.gui_script:62>
+TRACE:|   1.71ms |   7.2kb | game.logger     | 	After expensive operation:  	<example/example.gui_script:64>
 ```
 
 In this example, the `expensive_operation` function is profiled to measure the time and memory usage. This information can help you identify bottlenecks and optimize your game's performance.
@@ -54,26 +54,12 @@ Here, the logger is forced to log at the trace level, while the rest of the appl
 
 Defold's console allows filtering logs by level or logger name, enabling you to focus on the most relevant information. You can use the Log module's structured logging format to simplify this process.
 
-For example, your can set up filters with "T[" to show only trace logs, "D[" to show only debug logs, and so on. or "[game" to show only logs from the "game" logger.
+For example, your can set up filters with "TRACE" to show only trace logs, "DEBUG" to show only debug logs, and so on. or "[game" to show only logs from the "game" logger.
 
 ![](media/filter_logs.png)
 
 
-## 4. Example of using Log
-
-Example of my output:
-```lua
-000.00ms 00.0kb D[nakama                ]: Session token is valid  	<core/system/nakama/nakama_core.lua:201>
-049.94ms 19.8kb I[nakama                ]: Socket connected  	<core/system/nakama/nakama_core.lua:216>
-000.00ms 00.0kb I[system.network_world  ]: Match created {self: {session_id: 8191398c-ce94-11ee-848c-3ec1ae061c27, user_id: 2248dc6f-1b74-4e1c-9a6e-666884544442, username: 3a882750-5b61-439c-c392-ca665dd6803d}, size: 1, match_id: 87bc296a-7477-5754-8a0a-40418ac58da3.} 	<core/system/network_world.lua:138>
-000.13ms 01.8kb D[system.network_world  ]: Sending match data {presences: {1: {... #0}}, op_code: 2, data: {"world_id":"level1"}} 	<core/system/network_world.lua:100>
-000.00ms 00.0kb D[system.field          ]: Turn results {1: {entity_id: player, data: {... #0}, action: movement}} 	<core/system/field.lua:109>
-401.27ms 158.3kb D[system.network_world ]: Sending match data {op_code: 3, data: [{"entity_id":"player","data":{"distance":1,"side":"left"},"action":"movement"}]} 	<core/system/network_world.lua:100>
-633.81ms 246.6kb D[system.field         ]: Turn results {1: {entity_id: player, data: {... #0}, action: movement}} 	<core/system/field.lua:109>
-```
-
-
-## 5. Integrating the Log Module into Your Library
+## 4. Integrating the Log Module into Your Library
 
 To set ability to use custom logger in your library, you can use the following approach:
 
