@@ -57,7 +57,11 @@ function init(self)
 	logger:warn("Warn message", {key = "value"})
 	logger:error("Error message", {key = "value"})
 
-	logger:info("Table to string", { inner_table = { a = 1, b = 2, c = { d = 3, e = 4 } }})
+	logger:info("Table to string", { inner_table = {
+		a = 1,
+		b = 2,
+		c = { d = 3, e = 4 }
+	}})
 
 	logger:trace("Before expensive operation")
 	expensiveOperation()

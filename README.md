@@ -46,7 +46,7 @@ This is a default configuration for the Log module:
 ```ini
 [log]
 level = TRACE
-level_release = FATAL
+level_release = ERROR
 logger_block_width = 16
 info_block = %levelname[%logger]
 message_block = %tab%message: %context %tab<%function>
@@ -56,8 +56,8 @@ inspect_depth = 1
 
 This configuration section for `game.project` defines various settings:
 
-- **level**: Sets the default logging level for development builds. In this case, `TRACE` level logs will be shown, including more detailed information useful during development.
-- **level_release**: Determines the logging level for release builds, where `FATAL` and above levels will be logged, focusing on warnings and errors that are critical for a production environment.
+- **level**: Sets the default logging level for development builds. In this case, `TRACE` and above levels will be logged, providing detailed information for debugging and monitoring.
+- **level_release**: Determines the logging level for release builds, where `ERROR` and above levels will be logged, focusing on warnings and errors that are critical for a production environment. Use `FATAL` to silence all logs.
 - **logger_block_width**: Defines the width of the logger block in log messages. This helps in aligning log messages for better readability.
 - **info_block**: Defines the format of the info block in log messages, which includes the log level and logger name in this configuration.
 - **message_block**: Sets the format for the message block, including the actual log message, any context provided, and the function from which the log was called.
@@ -75,6 +75,7 @@ In the `[log]` configuration section for `game.project`, the `info_block` and `m
 
 #### Message Block Placeholders:
 - **%tab**: A tab character for formatting log messages.
+- **%space**: A space character for formatting log messages.
 - **%message**: The actual log message content. This is the primary information you want to log.
 - **%context**: Any additional context provided along with the log message. It can be useful for providing extra information relevant to the log message (e.g., variable values, state information).
 - **%function**: The function name or location from where the log message was generated. Helps in pinpointing where in the codebase a particular log message is coming from, aiding in debugging.
@@ -83,11 +84,11 @@ In the `[log]` configuration section for `game.project`, the `info_block` and `m
 #### Output Prefabs
 
 **Info:** `%levelname[%logger]`
-**Message:** `%tab%message: %context %tab<%function>`
+**Message:** `%space%message: %context %tab<%function>`
 **Preview:**
 
 ```
-DEBUG:[game.logger     ]	Debug message: {debug: message, value: 2} 	<example/example.gui_script:17>
+DEBUG:[game.logger     ] Debug message: {debug: message, value: 2} 	<example/example.gui_script:17>
 ```
 
 ---
@@ -139,7 +140,7 @@ If you want to use the native UTF8 extension, add the following line to the depe
 https://github.com/d954mas/defold-utf8/archive/master.zip
 ```
 
-The Log module automatically detects the presence of the native UTF8 extension and uses it if available. If the extension is not present, the Log module will use the built-in string functions.
+The Log module automatically detects the presence of the native UTF8 extension and uses it if available. If the extension is not present, the Log module will use the built-in Lua string functions.
 
 
 ### Using High Resolution Timer Extension
@@ -156,6 +157,7 @@ https://github.com/d954mas/defold-chronos/archive/refs/tags/1.0.1.zip
 Then to use the high-resolution timer, you need to add `%chronos_tracking` to the `info_block` in the `game.project` file:
 
 ```ini
+[log]
 info_block = %levelname| %chronos_tracking | %logger
 ```
 

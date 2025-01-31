@@ -1,30 +1,32 @@
 --- If native utf8 is available, use it, otherwise use string
 local string_m = utf8 or string
 
+---@alias logger log
+
 ---@class log
 ---@field name string
 ---@field level string
+---@field private _last_gc_memory number
+---@field private _last_message_time number
 local M = {}
 
 local IS_DEBUG = sys.get_engine_info().is_debug
 local SYSTEM_NAME = sys.get_sys_info().system_name
 local IS_MOBILE = SYSTEM_NAME == "iPhone OS" or SYSTEM_NAME == "Android"
 
-local DEFAULT_LEVEL = IS_DEBUG and "TRACE" or "FATAL"
+local DEFAULT_LEVEL = IS_DEBUG and "TRACE" or "ERROR"
 local GAME_LOG_LEVEL = sys.get_config_string(IS_DEBUG and "log.level" or "log.level_release", DEFAULT_LEVEL)
 
 local LOGGER_BLOCK_WIDTH = sys.get_config_int("log.logger_block_width", 10)
 local MAX_LOG_LENGTH = sys.get_config_int("log.max_log_length", 1024)
 local INSPECT_DEPTH = sys.get_config_int("log.inspect_depth", 1)
 
---%time_tracking %memory_tracking %chronos_tracking
--- Need to check if info block contains these flags
 local IS_TIME_TRACK = IS_DEBUG and string_m.find(sys.get_config_string("log.info_block", ""), "%%time_tracking") ~= nil
 local IS_MEMORY_TRACK = IS_DEBUG and string_m.find(sys.get_config_string("log.info_block", ""), "%%memory_tracking") ~= nil
 local IS_CHRONOS_TRACK = IS_DEBUG and string_m.find(sys.get_config_string("log.info_block", ""), "%%chronos_tracking") ~= nil
 
 -- Info: %levelname[%logger]
--- Message: %tab%message: %context %tab<%function>
+-- Message: %space%message: %context %tab<%function>
 -- Preview: DEBUG:[game.logger     ]	Debug message: {debug: message, value: 2} 	<example/example.gui_script:17>
 
 -- Info: %levelname| %time_tracking | %memory_tracking | %logger
@@ -32,12 +34,12 @@ local IS_CHRONOS_TRACK = IS_DEBUG and string_m.find(sys.get_config_string("log.i
 -- Preview: DEBUG:| 166.71ms |   2.4kb | game.logger      |	Delayed message: just string 	<example/example.gui_script:39>
 
 local INFO_BLOCK = sys.get_config_string("log.info_block", "%levelname| %time_tracking | %memory_tracking | %logger")
-local MESSAGE_BLOCK = sys.get_config_string("log.message_block", "%tab%message %context %tab<%function>")
-
 local IS_FORMAT_LOGGER = string_m.find(INFO_BLOCK, "%%logger") ~= nil
 local IS_FORMAT_LEVEL_NAME = string_m.find(INFO_BLOCK, "%%levelname") ~= nil
 
+local MESSAGE_BLOCK = sys.get_config_string("log.message_block", "%tab%message %context %tab<%function>")
 local IS_FORMAT_TAB = string_m.find(MESSAGE_BLOCK, "%%tab") ~= nil
+local IS_FORMAT_SPACE = string_m.find(MESSAGE_BLOCK, "%%space") ~= nil
 local IS_FORMAT_MESSAGE = string_m.find(MESSAGE_BLOCK, "%%message") ~= nil
 local IS_FORMAT_CONTEXT = string_m.find(MESSAGE_BLOCK, "%%context") ~= nil
 local IS_FORMAT_FUNCTION = string_m.find(MESSAGE_BLOCK, "%%function") ~= nil
@@ -50,12 +52,12 @@ local ERROR = "ERROR"
 local FATAL = "FATAL"
 
 local LEVEL_TO_CONSOLE_MAP = {
-	[TRACE] = "TRACE:",
-	[DEBUG] = "DEBUG:",
-	[INFO] = "INFO: ",
-	[WARN] = "WARN: ",
-	[ERROR] = "ERROR:",
-	[FATAL] = "FATAL:",
+	[TRACE] = "TRACE:  ",
+	[DEBUG] = "DEBUG:  ",
+	[INFO]  = "INFO:   ",
+	[WARN]  = "WARNING:",
+	[ERROR] = "ERROR:  ",
+	[FATAL] = "FATAL:  ",
 }
 
 local LEVEL_PRIORITY = {
@@ -91,10 +93,14 @@ local function table_to_string(t, depth, result)
 
 		if type(value) == "table" then
 			if depth == 0 then
-				result = result .. key .. ": {... #" .. #value .. "}"
+				local table_len = 0
+				for _ in pairs(value) do
+					table_len = table_len + 1
+				end
+				result = result .. key .. ": {... #" .. table_len .. "}"
 			else
-				local convert_result, is_limit = table_to_string(value, depth - 1, result .. key .. ": ")
-				result = convert_result
+				local convert_result, is_limit = table_to_string(value, depth - 1, "")
+				result = result .. key .. ": {" .. convert_result
 				if is_limit then
 					break
 				end
@@ -110,13 +116,6 @@ local function table_to_string(t, depth, result)
 
 	return result .. "}", false
 end
-
-
----@class logger: log
----@field name string
----@field level string
----@field private _last_gc_memory number
----@field private _last_message_time number
 
 
 ---@param level string TRACE, DEBUG, INFO, WARN, ERROR
@@ -169,15 +168,15 @@ function M:format(level, message, context)
 
 	if IS_FORMAT_LOGGER then
 		-- Make logger name length equal to LOGGER_BLOCK_WIDTH
-		local name_to_instert = self.name
+		local name_to_insert = self.name
 		local logger_name_length = string_m.len(self.name)
 		if logger_name_length < LOGGER_BLOCK_WIDTH then
-			name_to_instert = name_to_instert .. string.rep(" ", LOGGER_BLOCK_WIDTH - logger_name_length)
+			name_to_insert = name_to_insert .. string.rep(" ", LOGGER_BLOCK_WIDTH - logger_name_length)
 		elseif logger_name_length > LOGGER_BLOCK_WIDTH then
-			name_to_instert = string_m.sub(name_to_instert, 1, LOGGER_BLOCK_WIDTH)
+			name_to_insert = string_m.sub(name_to_insert, 1, LOGGER_BLOCK_WIDTH)
 		end
 
-		string_info_block = string_m.gsub(string_info_block, "%%logger", name_to_instert)
+		string_info_block = string_m.gsub(string_info_block, "%%logger", name_to_insert)
 	end
 
 	if IS_FORMAT_LEVEL_NAME then
@@ -188,6 +187,10 @@ function M:format(level, message, context)
 	local string_message_block = MESSAGE_BLOCK
 	if IS_FORMAT_TAB then
 		string_message_block = string_m.gsub(string_message_block, "%%tab", "\t")
+	end
+
+	if IS_FORMAT_SPACE then
+		string_message_block = string_m.gsub(string_message_block, "%%space", " ")
 	end
 
 	if IS_FORMAT_MESSAGE then
@@ -317,7 +320,8 @@ function M.get_logger(logger_name, force_logger_level_in_debug)
 end
 
 
-local DEFAULT_LOGGER = M.get_logger(sys.get_config_string("project.title", "log"))
+local PROJECT_TITLE = sys.get_config_string("project.title", "log")
+local DEFAULT_LOGGER = M.get_logger(PROJECT_TITLE)
 return setmetatable(M, {
 	__index = DEFAULT_LOGGER,
 })
