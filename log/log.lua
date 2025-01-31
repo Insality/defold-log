@@ -36,6 +36,7 @@ local IS_CHRONOS_TRACK = IS_DEBUG and string_m.find(sys.get_config_string("log.i
 local INFO_BLOCK = sys.get_config_string("log.info_block", "%levelname| %time_tracking | %memory_tracking | %logger")
 local IS_FORMAT_LOGGER = string_m.find(INFO_BLOCK, "%%logger") ~= nil
 local IS_FORMAT_LEVEL_NAME = string_m.find(INFO_BLOCK, "%%levelname") ~= nil
+local IS_FORMAT_LEVEL_SHORT = string_m.find(INFO_BLOCK, "%%levelshort") ~= nil
 
 local MESSAGE_BLOCK = sys.get_config_string("log.message_block", "%tab%message %context %tab<%function>")
 local IS_FORMAT_TAB = string_m.find(MESSAGE_BLOCK, "%%tab") ~= nil
@@ -58,6 +59,15 @@ local LEVEL_TO_CONSOLE_MAP = {
 	[WARN]  = "WARNING:",
 	[ERROR] = "ERROR:  ",
 	[FATAL] = "FATAL:  ",
+}
+
+local LEVEL_SHORT_TO_CONSOLE_MAP = {
+	[TRACE] = "T",
+	[DEBUG] = "D",
+	[INFO]  = "I",
+	[WARN]  = "W",
+	[ERROR] = "E",
+	[FATAL] = "F",
 }
 
 local LEVEL_PRIORITY = {
@@ -183,6 +193,10 @@ function M:format(level, message, context)
 
 	if IS_FORMAT_LEVEL_NAME then
 		string_info_block = string_m.gsub(string_info_block, "%%levelname", LEVEL_TO_CONSOLE_MAP[level])
+	end
+
+	if IS_FORMAT_LEVEL_SHORT then
+		string_info_block = string_m.gsub(string_info_block, "%%levelshort", string.sub(LEVEL_SHORT_TO_CONSOLE_MAP[level], 1, 5))
 	end
 
 	-- Format message block
