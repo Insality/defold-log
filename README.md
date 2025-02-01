@@ -37,19 +37,19 @@ https://github.com/Insality/defold-log/archive/refs/tags/4.zip
 | HTML5            | **2.55 KB**  |
 | Desktop / Mobile | **4.29 KB**  |
 
-### Configuration
+### Configuration [Optional]
 
-You have the option to configure logging preferences directly within your `game.project` file. This allows you to adjust log levels, format, and performance tracking options.
+You have the option to configure logging preferences directly within your `game.project` file. This allows you to customize the log message format, log levels, and other settings based on your project's requirements.
 
-This is a default configuration for the Log module:
+This is a default configuration for the Log module, all fields are optional, and this is a default value:
 
 ```ini
 [log]
 level = TRACE
 level_release = ERROR
-logger_block_width = 16
 info_block = %levelname[%logger]
-message_block = %tab%message: %context %tab<%function>
+message_block = %space%message: %context %tab<%function>
+logger_block_width = 14
 max_log_length = 1024
 inspect_depth = 1
 ```
@@ -84,7 +84,7 @@ In the `[log]` configuration section for `game.project`, the `info_block` and `m
 | Placeholder  | Description                                                                                                                                                                                                 |
 |--------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | **%tab**     | A tab character for formatting log messages.                                                                                                                                                                |
-| **%space**   | A space character for formatting log messages.                                                                                                                                                              |
+| **%space**   | A space character for formatting log messages. Usually used before or end of the message, where you can't use just space in game.project.                                                                         |
 | **%message** | The actual log message content. This is the primary information you want to log.                                                                                                                            |
 | **%context** | Any additional context provided along with the log message. It can be useful for providing extra information relevant to the log message (e.g., variable values, state information).                        |
 | **%function**| The function name or location from where the log message was generated. Helps in pinpointing where in the codebase a particular log message is coming from, aiding in debugging.                             |
