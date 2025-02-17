@@ -3,6 +3,9 @@ local log = require("log.log")
 local logger = log.get_logger("game.logger")
 local logger_two = log.get_logger("game.logger_two")
 
+local debugger = require('debugger.debugger')
+debugger.start()
+
 
 local function expensiveOperation()
 	for index = 1, 1000000 do
@@ -66,4 +69,12 @@ function init(self)
 	logger:trace("Before expensive operation")
 	expensiveOperation()
 	logger:trace("After expensive operation")
+
+	local counter = 0
+	timer.delay(0.01, true, function()
+		counter = counter + 1
+	end)
+	timer.delay(1, true, function()
+		logger:info("Counter", counter)
+	end)
 end

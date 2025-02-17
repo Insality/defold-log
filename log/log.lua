@@ -307,12 +307,12 @@ end
 
 
 ---Return the new logger instance
----@param logger_name string
+---@param logger_name string|nil
 ---@param force_logger_level_in_debug string|nil Default is DEBUG, values: FATAL, ERROR, WARN, INFO, DEBUG, TRACE
 ---@return logger
 function M.get_logger(logger_name, force_logger_level_in_debug)
 	local instance = {
-		name = logger_name or "",
+		name = logger_name or M.get_default_logger_name(),
 		level = force_logger_level_in_debug or GAME_LOG_LEVEL,
 	}
 
@@ -335,6 +335,16 @@ function M.get_logger(logger_name, force_logger_level_in_debug)
 	end
 
 	return setmetatable(instance, { __index = M }) --[[@as logger]]
+end
+
+
+function M.get_default_logger_name()
+	local current_script_path = debug.getinfo(3).short_src
+	-- Extract basename
+	local basename = string.match(current_script_path, "([^/\\]+)$")
+	-- Remove extension
+	basename = string.match(basename, "(.*)%..*$")
+	return basename
 end
 
 
