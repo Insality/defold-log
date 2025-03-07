@@ -186,8 +186,9 @@ log:info(message, [data])
 log:warn(message, [data])
 log:error(message, [data])
 
--- Create a new logger instance with a specific logger name
-local logger = log.get_logger(logger_name, [force_logger_level_in_debug])
+-- Create a new logger instance with a specific logger name.
+-- Default logger name is file name of the current script.
+local logger = log.get_logger([logger_name], [force_logger_level_in_debug])
 logger:trace(message, [data])
 logger:debug(message, [data])
 logger:info(message, [data])
@@ -210,12 +211,12 @@ local log = require("log.log")
 **log.get_logger**
 ---
 ```lua
-log.get_logger(logger_name, [force_logger_level_in_debug])
+log.get_logger([logger_name], [force_logger_level_in_debug])
 ```
 Create a new logger instance with an optional forced log level for debugging purposes.
 
 - **Parameters:**
-  - `logger_name`: A string representing the name of the logger.
+  - `logger_name`: A string representing the name of the logger. Default is file name of the current script.
   - `force_logger_level_in_debug` (optional): A string representing the forced log level when in debug mode (e.g., "DEBUG", "INFO").
 
 - **Return Value:** A new logger instance.

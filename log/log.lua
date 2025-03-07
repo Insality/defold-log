@@ -338,6 +338,7 @@ function M.get_logger(logger_name, force_logger_level_in_debug)
 end
 
 
+---Return the basename of the current file
 function M.get_default_logger_name()
 	local current_script_path = debug.getinfo(3).short_src
 	-- Extract basename
