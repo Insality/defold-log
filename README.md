@@ -381,9 +381,13 @@ To contribute, please look for issues tagged with `[Contribute]`, solve them, an
 
 ### **V5**
 - Add `FATAL` level for silent all logs
-- Changed module settings
-	- For better visualisation of logs in Defold Console with level highlighting
-
+	- Designed for release builds
+- Now logger name is optional, by default it's file name of the current script.
+- Changed default Log module settings
+	- Improved visualization and color highlighting in Defold Console
+- Removed time and memory tracking options from `game.project`
+	- Now it's possible to use `%time_tracking` and `%memory_tracking` placeholders in `info_block` to track time and memory usage.
+	- For time tracking with chronos extension, use the `%chronos_tracking` placeholder.
 </details>
 
 
