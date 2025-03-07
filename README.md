@@ -22,10 +22,10 @@
 
 Open your `game.project` file and add the following line to the dependencies field under the project section:
 
-**[Log](https://github.com/Insality/defold-log/archive/refs/tags/4.zip)**
+**[Log](https://github.com/Insality/defold-log/archive/refs/tags/5.zip)**
 
 ```
-https://github.com/Insality/defold-log/archive/refs/tags/4.zip
+https://github.com/Insality/defold-log/archive/refs/tags/5.zip
 ```
 
 ### Library Size
@@ -56,19 +56,19 @@ inspect_depth = 1
 
 This configuration section for `game.project` defines various settings:
 
-| Setting             | Description                                                                                                                                                                                                 |
-|---------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| **level**           | Sets the default logging level for development builds. In this case, `TRACE` and above levels will be logged, providing detailed information for debugging and monitoring.                                   |
-| **level_release**   | Determines the logging level for release builds, where `ERROR` and above levels will be logged, focusing on warnings and errors that are critical for a production environment. Use `FATAL` to silence all logs. |
-| **info_block**      | Defines the format of the info block in log messages, which includes the log level and logger name in this configuration.                                                                                     |
-| **message_block**   | Sets the format for the message block, including the actual log message, any context provided, and the function from which the log was called.                                                               |
-| **logger_block_width** | Defines the width of the logger block in log messages. This helps in aligning log messages for better readability. Default is 14.                                                                          |
-| **max_log_length**  | The maximum length of the log message. If the message exceeds this length, it will be truncated. Default is 1024.                                                                                            |
-| **inspect_depth**   | The maximum depth of nested tables to inspect when logging. Default is 1.                                                                                                                                    |
+| Setting             | Description                                                                                                                                                                                                 | Default Value     |
+|---------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------| ------------------- |
+| **level**           | Sets the default logging level for development builds. In this case, `TRACE` and above levels will be logged, providing detailed information for debugging and monitoring.                                   | `TRACE`             |
+| **level_release**   | Determines the logging level for release builds, where `ERROR` and above levels will be logged, focusing on warnings and errors that are critical for a production environment. Use `FATAL` to silence all logs. | `ERROR`             |
+| **info_block**      | Defines the format of the info block in log messages, which includes the log level and logger name in this configuration.                                                                                     | `%levelname[%logger]` |
+| **message_block**   | Sets the format for the message block, including the actual log message, any context provided, and the function from which the log was called.                                                               | `%space%message: %context %tab<%function>` |
+| **logger_block_width** | Defines the width of the logger block in log messages. This helps in aligning log messages for better readability. Default is 14.                                                                          | `14` |
+| **max_log_length**  | The maximum length of the log message. If the message exceeds this length, it will be truncated. Default is 1024.                                                                                            | `1024` |
+| **inspect_depth**   | The maximum depth of nested tables to inspect when logging. Default is 1.                                                                                                                                    | `1` |
 
 In the `[log]` configuration section for `game.project`, the `info_block` and `message_block` fields allow for dynamic content based on specific placeholders. These placeholders get replaced with actual log information at runtime, providing structured and informative log messages.
 
-#### Info Block Placeholders:
+#### Info Block Placeholders
 
 | Placeholder          | Description                                                                                                                                                                                                 |
 |----------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -79,7 +79,7 @@ In the `[log]` configuration section for `game.project`, the `info_block` and `m
 | **%memory_tracking** | The memory allocated since the last entry in this logger instance. Memory tracking will be enabled, if this placeholder is used.                                                                             |
 | **%chronos_tracking**| The time elapsed since the last entry in this logger instance. Chronos extension will be used, if this placeholder is used.                                                                                  |
 
-#### Message Block Placeholders:
+#### Message Block Placeholders
 
 | Placeholder  | Description                                                                                                                                                                                                 |
 |--------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
