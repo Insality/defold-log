@@ -6,5 +6,69 @@
 		"socket",
 		"timer",
 		"init"
-	]
+	],
+	"Lua.workspace.library": [
+		"~/Library/Application Support/Code/User/globalStorage/astronachos.defold",
+		"~/Library/Application Support/Code/User/workspaceStorage/4fbc585ca2242bd371d2d91a275ec767/astronachos.defold",
+		"~/Library/Application Support/Cursor/User/workspaceStorage/4fbc585ca2242bd371d2d91a275ec767/astronachos.defold"
+	],
+	"[lua]": {
+		"editor.defaultFormatter": "sumneko.lua"
+	},
+	"Lua.runtime.version": "Lua 5.1",
+	"Lua.runtime.pathStrict": true,
+	"Lua.window.statusBar": false,
+	"Lua.completion.callSnippet": "Replace",
+	"Lua.completion.keywordSnippet": "Replace",
+	"Lua.completion.showWord": "Fallback",
+	"Lua.completion.autoRequire": false,
+	"Lua.diagnostics.libraryFiles": "Disable",
+	"Lua.diagnostics.disable": [
+		"lowercase-global",
+		"redefined-local"
+	],
+	"glsllint.additionalStageAssociations": {
+		".fp": "frag",
+		".vp": "vert"
+	},
+	"files.associations": {
+		"*.gui_script": "lua",
+		"*.script": "lua",
+		"*.render_script": "lua",
+		"*.fp": "glsl",
+		"*.vp": "glsl",
+		"*.editor_script": "lua",
+		"*.project": "ini",
+		"*.go": "textproto",
+		"*.animationset": "textproto",
+		"*.atlas": "textproto",
+		"*.buffer": "json",
+		"*.camera": "textproto",
+		"*.collection": "textproto",
+		"*.collectionfactory": "textproto",
+		"*.collectionproxy": "textproto",
+		"*.collisionobject": "textproto",
+		"*.display_profiles": "textproto",
+		"*.factory": "textproto",
+		"*.gamepads": "textproto",
+		"*.gui": "textproto",
+		"*.input_binding": "textproto",
+		"*.label": "textproto",
+		"*.material": "textproto",
+		"*.mesh": "textproto",
+		"*.model": "textproto",
+		"*.particlefx": "textproto",
+		"*.render": "textproto",
+		"*.sound": "textproto",
+		"*.spinemodel": "textproto",
+		"*.spinescene": "textproto",
+		"*.sprite": "textproto",
+		"*.texture_profiles": "textproto",
+		"*.tilemap": "textproto",
+		"*.tilesource": "textproto",
+		"*.manifest": "textproto",
+		"*.appmanifest": "yaml",
+		"*.script_api": "yaml",
+		"ext.manifest": "yaml"
+	}
 }
