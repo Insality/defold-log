@@ -3,9 +3,6 @@ local log = require("log.log")
 local logger = log.get_logger("game.logger")
 local logger_two = log.get_logger("game.logger_two")
 
-local debugger = require('debugger.debugger')
-debugger.start()
-
 
 local function expensiveOperation()
 	for index = 1, 1000000 do
