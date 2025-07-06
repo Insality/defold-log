@@ -25,7 +25,7 @@ local log_callback = nil
 ---@param level string TRACE, DEBUG, INFO, WARN, ERROR
 ---@param message string Message to log
 ---@param context any Additional data to log
----@return string|nil
+---@return string
 function M:format(level, message, context)
 	return formatter.format(self, level, message, context)
 end
@@ -34,16 +34,16 @@ end
 ---Log message with specified level and message
 ---@private
 ---@param level string One of the next level: TRACE, DEBUG, INFO, WARN, ERROR
----@param message string The log message.
+---@param message string? The log message.
 ---@param context any Additional data to include with the log message.
 function M:log(level, message, context)
 	if config.LEVEL_PRIORITY[level] > config.LEVEL_PRIORITY[self.level] then
 		return nil
 	end
 
-	local log_message = self:format(level, message, context)
+	if message then
+		local log_message = self:format(level, message, context)
 
-	if log_message then
 		if config.IS_MOBILE then
 			print(log_message)
 		else
@@ -52,11 +52,11 @@ function M:log(level, message, context)
 		end
 
 		file_writter.internal_log_callback(self, level, message, context, log_message)
-	end
 
-	-- Additionally call custom callback if set
-	if log_callback then
-		log_callback(self, level, message, context, log_message)
+		-- Additionally call custom callback if set
+		if log_callback then
+			log_callback(self, level, message, context, log_message)
+		end
 	end
 
 	if config.IS_MEMORY_TRACK then
@@ -81,7 +81,7 @@ end
 
 
 ---Log message with TRACE level
----@param message string Message to log
+---@param message string? Message to log
 ---@param data any
 function M:trace(message, data)
 	self:log(config.TRACE, message, data)
@@ -141,8 +141,8 @@ function M.get_logger(logger_name, force_logger_level_in_debug)
 		name = logger_name or formatter.get_default_logger_name(debug.getinfo(2, "S")),
 		level = force_logger_level_in_debug or config.GAME_LOG_LEVEL,
 		file = nil,
-		_last_gc_memory = config.IS_MEMORY_TRACK and collectgarbage("count") or nil,
-		_last_message_time = config.IS_TIME_TRACK and socket.gettime() or nil,
+		_last_gc_memory = nil,
+		_last_message_time = nil,
 	}
 
 	if config.IS_CHRONOS_TRACK then

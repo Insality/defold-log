@@ -80,7 +80,7 @@ end
 ---@param level string TRACE, DEBUG, INFO, WARN, ERROR
 ---@param message string Message to log
 ---@param context any Additional data to log
----@return string|nil
+---@return string
 function M.format(logger, level, message, context)
 	-- Format info block
 	local string_info_block = config.INFO_BLOCK
@@ -88,6 +88,7 @@ function M.format(logger, level, message, context)
 	if config.IS_MEMORY_TRACK then
 		local format = "%5.1fkb"
 		local current_memory = collectgarbage("count")
+		logger._last_gc_memory = logger._last_gc_memory or current_memory
 		local diff_memory = current_memory - logger._last_gc_memory
 
 		if diff_memory < 0 then
@@ -105,6 +106,7 @@ function M.format(logger, level, message, context)
 
 	if config.IS_TIME_TRACK then
 		local format = "%6.2fms"
+		logger._last_message_time = logger._last_message_time or socket.gettime()
 		local diff_time = (socket.gettime() - logger._last_message_time) * 1000
 		if diff_time > 1000 then
 			diff_time = diff_time / 1000
@@ -116,6 +118,7 @@ function M.format(logger, level, message, context)
 
 	if config.IS_CHRONOS_TRACK then
 		local format = "%8.4fms"
+		logger._last_message_time = logger._last_message_time or chronos.nanotime()
 		local diff_time = (chronos.nanotime() - logger._last_message_time) * 1000
 		if diff_time > 1000 then
 			diff_time = diff_time / 1000
@@ -161,7 +164,7 @@ function M.format(logger, level, message, context)
 		string_message_block = string_m.gsub(string_message_block, "%%space", " ")
 	end
 
-	if config.IS_FORMAT_MESSAGE then
+	if config.IS_FORMAT_MESSAGE and message then
 		string_message_block = string_m.gsub(string_message_block, "%%message", message)
 	end
 

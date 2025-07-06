@@ -90,3 +90,14 @@ function init(self)
 		logger:info("Counter", counter)
 	end)
 end
+
+
+function update(self, dt)
+	logger:info("Update", dt)
+end
+
+
+
+function final(self)
+	log.clear_log_files()
+end

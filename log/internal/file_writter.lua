@@ -1,4 +1,5 @@
 local config = require("log.internal.config")
+local formatter = require("log.internal.formatter")
 
 local M = {}
 
@@ -37,13 +38,12 @@ function M.write_nearby_this_file(logger)
 		return
 	end
 
-	local file_path = debug.getinfo(2, "S").short_src
+	local file_path = debug.getinfo(3, "S").short_src
 	local folder_path = string.match(file_path, "(.+)/[^/]+$")
 
 	local name = logger.name
 	if name == config.AUTO_NAME then
-		local formatter = require("log.internal.formatter")
-		name = formatter.get_default_logger_name(debug.getinfo(2, "S"))
+		name = formatter.get_default_logger_name(debug.getinfo(3, "S"))
 	end
 
 	logger.file = string.format("%s/%s/%s.log", project_path, folder_path, name)
@@ -91,6 +91,7 @@ function M.clear_log_files()
 	end
 
 	M.STATE.logs = {}
+	sys.save(config.SAVE_PATH, M.STATE.logs)
 end
 
 
