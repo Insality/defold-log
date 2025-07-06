@@ -26,6 +26,9 @@ local IS_TIME_TRACK = IS_DEBUG and string_m.find(sys.get_config_string("log.info
 local IS_MEMORY_TRACK = IS_DEBUG and string_m.find(sys.get_config_string("log.info_block", ""), "%%memory_tracking") ~= nil
 local IS_CHRONOS_TRACK = IS_DEBUG and string_m.find(sys.get_config_string("log.info_block", ""), "%%chronos_tracking") ~= nil
 
+-- Custom callback for log messages
+local log_callback = nil
+
 -- Info: %levelname[%logger]
 -- Message: %space%message: %context %tab<%function>
 -- Preview: DEBUG:[game.logger     ]	Debug message: {debug: message, value: 2} 	<example/example.gui_script:17>
@@ -258,6 +261,11 @@ function M:log(level, message, context)
 		end
 	end
 
+	-- Additionally call custom callback if set
+	if log_callback then
+		log_callback(self, level, message, context, log_message)
+	end
+
 	if IS_MEMORY_TRACK then
 		self._last_gc_memory = collectgarbage("count")
 	end
@@ -269,6 +277,13 @@ function M:log(level, message, context)
 	if IS_CHRONOS_TRACK then
 		self._last_message_time = chronos.nanotime()
 	end
+end
+
+
+---Set a custom handler for log messages, only one callback can be set
+---@param callback function|nil Function that receives (logger, level, message, context, log_message)
+function M.set_callback(callback)
+	log_callback = callback
 end
 
 

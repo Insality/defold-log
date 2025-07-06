@@ -198,6 +198,9 @@ log:info(message, [data])
 log:warn(message, [data])
 log:error(message, [data])
 
+-- Set custom handler for log messages
+log.set_callback(function(logger, level, message, context, log_message) end)
+
 -- Create a new logger instance with a specific logger name.
 -- Default logger name is file name of the current script.
 local logger = log.get_logger([logger_name], [force_logger_level_in_debug])
@@ -241,6 +244,37 @@ Create a new logger instance with an optional forced log level for debugging pur
 
 ```lua
 local my_logger = log.get_logger("game.logger")
+```
+
+**log.set_callback**
+---
+```lua
+log.set_callback(callback)
+```
+Set a custom handler for log messages. This allows you to intercept and process log messages for additional purposes such as file logging, remote logging, or custom formatting. The callback is called in addition to the default console output.
+
+- **Parameters:**
+  - `callback`: A function that receives `(logger, level, message, context, log_message)` parameters, or `nil` to remove the callback.
+    - `logger`: The logger instance that generated the log
+    - `level`: The log level (TRACE, DEBUG, INFO, WARN, ERROR, FATAL)
+    - `message`: The original message string
+    - `context`: Any additional context data passed to the log function
+    - `log_message`: The formatted log message string (as it appears in console)
+
+- **Usage Example:**
+
+```lua
+-- Set up file logging
+log.set_callback(function(logger, level, message, context, log_message)
+    local file = io.open("game.log", "a")
+    if file then
+        file:write(log_message .. "\n")
+        file:close()
+    end
+end)
+
+-- Remove callback
+log.set_callback(nil)
 ```
 
 ### Logger Instance Methods
