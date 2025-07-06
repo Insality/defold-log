@@ -13,7 +13,7 @@ end
 
 function init(self)
 	log.clear_log_files()
-	log.set_callback(function(logger, level, message, context, log_message)
+	log.add_callback(function(logger, level, message, context, log_message)
 		if logger.file then
 			local file = io.open(logger.file, "a")
 			if file then
@@ -99,5 +99,6 @@ end
 
 
 function final(self)
+	log.close_log_files()
 	log.clear_log_files()
 end

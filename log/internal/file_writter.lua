@@ -9,6 +9,8 @@ M.STATE = {
 	logs = sys.load(config.SAVE_PATH) or {}
 }
 
+local FILE_HANDLERS = {}
+
 
 ---Internal log callback for file writing
 ---@param logger table Logger instance
@@ -16,12 +18,16 @@ M.STATE = {
 ---@param message string Original message
 ---@param context any Additional context
 ---@param log_message string Formatted log message
-function M.internal_log_callback(logger, level, message, context, log_message)
+function M.log_callback(logger, level, message, context, log_message)
 	if logger.file then
-		local file_handle = io.open(logger.file, "a")
-		if file_handle then
-			file_handle:write(log_message .. "\n")
-			file_handle:close()
+		if not FILE_HANDLERS[logger.file] then
+			FILE_HANDLERS[logger.file] = io.open(logger.file, "a")
+		end
+
+		local handler = FILE_HANDLERS[logger.file]
+		if handler then
+			handler:write(log_message .. "\n")
+			handler:flush()
 
 			M.STATE.logs[logger.file] = socket.gettime()
 			sys.save(config.SAVE_PATH, M.STATE.logs)
@@ -94,5 +100,15 @@ function M.clear_log_files()
 	sys.save(config.SAVE_PATH, M.STATE.logs)
 end
 
+
+---Close all log files
+function M.close_log_files()
+	for _, handler in pairs(FILE_HANDLERS) do
+		handler:flush()
+		handler:close()
+	end
+
+	FILE_HANDLERS = {}
+end
 
 return M

@@ -16,8 +16,10 @@ local M = {}
 -- Use file_writter's state
 M.STATE = file_writter.STATE
 
--- Custom callback for log messages
-local log_callback = nil
+-- Custom callbacks for log messages
+local log_callbacks = {
+	file_writter.log_callback
+}
 
 
 ---Format log message
@@ -51,11 +53,9 @@ function M:log(level, message, context)
 			io.stdout:flush()
 		end
 
-		file_writter.internal_log_callback(self, level, message, context, log_message)
-
-		-- Additionally call custom callback if set
-		if log_callback then
-			log_callback(self, level, message, context, log_message)
+		-- Additionally call all custom callbacks
+		for index = 1, #log_callbacks do
+			log_callbacks[index](self, level, message, context, log_message)
 		end
 	end
 
@@ -73,10 +73,30 @@ function M:log(level, message, context)
 end
 
 
----Set a custom handler for log messages, only one callback can be set
----@param callback function|nil Function that receives (logger, level, message, context, log_message)
-function M.set_callback(callback)
-	log_callback = callback
+---Add a custom handler for log messages
+---@param callback function Function that receives (logger, level, message, context, log_message)
+function M.add_callback(callback)
+	if type(callback) == "function" then
+		table.insert(log_callbacks, callback)
+	end
+end
+
+
+---Remove a specific callback
+---@param callback function The callback function to remove
+function M.remove_callback(callback)
+	for i, cb in ipairs(log_callbacks) do
+		if cb == callback then
+			table.remove(log_callbacks, i)
+			break
+		end
+	end
+end
+
+
+---Clear all callbacks
+function M.clear_callbacks()
+	log_callbacks = {}
 end
 
 
@@ -162,6 +182,12 @@ end
 ---Clear all log files
 function M.clear_log_files()
 	file_writter.clear_log_files()
+end
+
+
+---Close all log files
+function M.close_log_files()
+	file_writter.close_log_files()
 end
 
 
