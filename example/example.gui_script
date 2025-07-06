@@ -1,11 +1,8 @@
 local log = require("log.log")
+log:write_nearby_this_file()
 
-
-local logger = log.get_logger("game.example")
-local logger_two = log.get_logger("game.example2", "WARN")
-
-local logger_short = require("log.log")("game.short1")
-local logger_short_level = require("log.log")("game.short2", "WARN")
+local logger = log.get_logger("logger", "TRACE")
+logger:write_nearby_this_file()
 
 local function expensiveOperation()
 	for index = 1, 1000000 do
@@ -15,23 +12,22 @@ end
 
 
 function init(self)
+	log.clear_log_files()
+	log.set_callback(function(logger, level, message, context, log_message)
+		if logger.file then
+			local file = io.open(logger.file, "a")
+			if file then
+				file:write(log_message .. "\n")
+				file:close()
+			end
+		end
+	end)
+
 	log:trace("trace", { key = "value" })
 	log:info("info", { key = "value" })
 	log:debug("debug", { key = "value" })
 	log:warn("warn", { key = "value" })
 	log:error("error", { key = "value" })
-
-	logger_short:trace("trace", { key = "value" })
-	logger_short:info("info", { key = "value" })
-	logger_short:debug("debug", { key = "value" })
-	logger_short:warn("warn", { key = "value" })
-	logger_short:error("error", { key = "value" })
-
-	logger_short_level:trace("trace", { key = "value" })
-	logger_short_level:info("info", { key = "value" })
-	logger_short_level:debug("debug", { key = "value" })
-	logger_short_level:warn("warn", { key = "value" })
-	logger_short_level:error("error", { key = "value" })
 
 	----
 
@@ -41,10 +37,8 @@ function init(self)
 		value = 2, debug = "message"
 	})
 
-	logger:info("Here is some info", logger)
-	logger_two:info("Here is some info", logger)
-	logger:info("Here is some info", logger)
-	logger_two:info("Here is some info", logger)
+	logger:info("Here is some info")
+	logger:info("Here is some info")
 
 	-- Now we logger show the memory about for this table allocation
 	local t = { "one", "two", "three" }
@@ -70,8 +64,6 @@ function init(self)
 			local a = {{}, {}, {}, {}}
 			table.insert(b, a)
 		end
-
-		logger_two:info("Second Plus")
 	end)
 
 	logger:trace("Trace message")

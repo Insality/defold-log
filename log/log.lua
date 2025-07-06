@@ -1,14 +1,25 @@
 --- If native utf8 is available, use it, otherwise use string
 local string_m = utf8 or string
 
+local APP_NAME = sys.get_config_string("project.title", "defold-log")
+local SAVE_PATH = sys.get_save_file(APP_NAME, "logs")
+
 ---@alias logger log
 
+---@overload fun(name: string, force_logger_level_in_debug: string): logger
 ---@class log
 ---@field name string
 ---@field level string
+---@field file string
 ---@field private _last_gc_memory number
 ---@field private _last_message_time number
 local M = {}
+
+---@class log.state
+---@field logs table<string, number>
+M.STATE = {
+	logs = sys.load(SAVE_PATH) or {}
+}
 
 local IS_DEBUG = sys.get_engine_info().is_debug
 local SYSTEM_NAME = sys.get_sys_info().system_name
@@ -133,7 +144,7 @@ end
 
 
 ---Format log message
----@local
+---@private
 ---@param level string TRACE, DEBUG, INFO, WARN, ERROR
 ---@param message string Message to log
 ---@param context any Additional data to log
@@ -240,8 +251,23 @@ function M:format(level, message, context)
 end
 
 
+---Internal log callback
+local function internal_log_callback(logger, level, message, context, log_message)
+	if logger.file then
+		local file_handle = io.open(logger.file, "a")
+		if file_handle then
+			file_handle:write(log_message .. "\n")
+			file_handle:close()
+
+			M.STATE.logs[logger.file] = socket.gettime()
+			sys.save(SAVE_PATH, M.STATE.logs)
+		end
+	end
+end
+
+
 ---Log message with specified level and message
----@local
+---@private
 ---@param level string One of the next level: TRACE, DEBUG, INFO, WARN, ERROR
 ---@param message string The log message.
 ---@param context any Additional data to include with the log message.
@@ -260,6 +286,8 @@ function M:log(level, message, context)
 			io.stdout:flush()
 		end
 	end
+
+	internal_log_callback(self, level, message, context, log_message)
 
 	-- Additionally call custom callback if set
 	if log_callback then
@@ -327,6 +355,54 @@ function M:error(message, data)
 end
 
 
+---Write log message to file
+function M:write_nearby_this_file()
+	local project_path = M.get_current_project_folder()
+	if not project_path then
+		return
+	end
+
+	local file_path = debug.getinfo(2, "S").short_src
+	local folder_path = string.match(file_path, "(.+)/[^/]+$")
+
+	local name = self.name
+	if name == AUTO_NAME then
+		name = M.get_default_logger_name(debug.getinfo(2, "S"))
+	end
+
+	self.file = string.format("%s/%s/%s.log", project_path, folder_path, name)
+end
+
+
+function M.get_current_project_folder()
+	if not io.popen or html5 then
+		return nil
+	end
+
+	local file = io.popen("pwd")
+	if not file then
+		return nil
+	end
+
+	local pwd = file:read("*l")
+	file:close()
+
+	if not pwd then
+		return nil
+	end
+
+	-- Check the game.project file exists in this folder
+	local game_project_path = pwd .. "/game.project"
+	local game_project_file = io.open(game_project_path, "r")
+	if not game_project_file then
+		return nil
+	end
+
+	game_project_file:close()
+	return pwd
+end
+
+
 ---Return the new logger instance
 ---@param logger_name string|nil
 ---@param force_logger_level_in_debug string|nil Default is DEBUG, values: FATAL, ERROR, WARN, INFO, DEBUG, TRACE
@@ -335,6 +411,7 @@ function M.get_logger(logger_name, force_logger_level_in_debug)
 	local instance = {
 		name = logger_name or M.get_default_logger_name(debug.getinfo(2, "S")),
 		level = force_logger_level_in_debug or GAME_LOG_LEVEL,
+		file = nil,
 	}
 
 	if IS_MEMORY_TRACK then
@@ -359,8 +436,21 @@ function M.get_logger(logger_name, force_logger_level_in_debug)
 end
 
 
+function M.clear_log_files()
+	for file, _ in pairs(M.STATE.logs) do
+		local is_ok, err = os.remove(file)
+		if not is_ok then
+			print(err)
+		end
+	end
+
+	M.STATE.logs = {}
+end
+
+
 local SOURCE_TO_NAME_MAP = {}
 ---Return the basename of the current file
+---@private
 ---@param debuginfo debuginfo
 ---@return string
 function M.get_default_logger_name(debuginfo)
@@ -377,9 +467,10 @@ function M.get_default_logger_name(debuginfo)
 end
 
 
-local DEFAULT_LOGGER = M.get_logger(AUTO_NAME)
+M.name = AUTO_NAME
+M.level = GAME_LOG_LEVEL
+
 return setmetatable(M, {
-	__index = DEFAULT_LOGGER,
 	__call = function(self, name, force_logger_level_in_debug)
 		return M.get_logger(name, force_logger_level_in_debug)
 	end
