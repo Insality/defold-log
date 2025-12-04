@@ -35,6 +35,9 @@ M.IS_TIME_TRACK = M.IS_DEBUG and string_m.find(sys.get_config_string("log.info_b
 M.IS_MEMORY_TRACK = M.IS_DEBUG and string_m.find(sys.get_config_string("log.info_block", ""), "%%memory_tracking") ~= nil
 M.IS_CHRONOS_TRACK = M.IS_DEBUG and string_m.find(sys.get_config_string("log.info_block", ""), "%%chronos_tracking") ~= nil
 
+-- Check if write_log_file is enabled in game.project
+M.IS_WRITE_LOG_FILE = sys.get_config_string("project.write_log_file", "0") ~= "0"
+
 -- Format blocks
 M.INFO_BLOCK = sys.get_config_string("log.info_block", "%levelname[%logger]")
 M.MESSAGE_BLOCK = sys.get_config_string("log.message_block", "%space%message: %context %tab<%function>")

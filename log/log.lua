@@ -21,6 +21,31 @@ local log_callbacks = {
 	file_writter.log_callback
 }
 
+-- Handler for Defold's log.txt file (if write_log_file is enabled)
+local log_txt_handler = nil
+
+
+---Get or create log.txt file handler
+---@return file*|nil
+local function get_log_txt_handler()
+	if not config.IS_WRITE_LOG_FILE then
+		return nil
+	end
+
+	if log_txt_handler then
+		return log_txt_handler
+	end
+
+	local project_path = file_writter.get_current_project_folder()
+	if not project_path then
+		return nil
+	end
+
+	local log_txt_path = project_path .. "/log.txt"
+	log_txt_handler = io.open(log_txt_path, "a")
+	return log_txt_handler
+end
+
 
 ---Format log message
 ---@private
@@ -51,6 +76,17 @@ function M:log(level, message, context)
 		else
 			io.stdout:write(log_message, "\n")
 			io.stdout:flush()
+		end
+
+		-- Write to log.txt if write_log_file is enabled in game.project
+		-- Note: Defold also writes stdout to log.txt when write_log_file=1,
+		-- but we write directly to ensure continuous logging even if Defold buffers output
+		if config.IS_WRITE_LOG_FILE then
+			local log_file = get_log_txt_handler()
+			if log_file then
+				log_file:write(log_message, "\n")
+				log_file:flush()
+			end
 		end
 
 		-- Additionally call all custom callbacks
@@ -188,6 +224,13 @@ end
 ---Close all log files
 function M.close_log_files()
 	file_writter.close_log_files()
+
+	-- Close log.txt handler
+	if log_txt_handler then
+		log_txt_handler:flush()
+		log_txt_handler:close()
+		log_txt_handler = nil
+	end
 end
 
 

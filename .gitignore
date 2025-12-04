@@ -9,3 +9,4 @@ dist
 manifest.public.der
 manifest.private.der
 /.editor_settings
+log.txt
