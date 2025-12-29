@@ -112,9 +112,8 @@ end
 ---Add a custom handler for log messages
 ---@param callback function Function that receives (logger, level, message, context, log_message)
 function M.add_callback(callback)
-	if type(callback) == "function" then
-		table.insert(log_callbacks, callback)
-	end
+	assert(type(callback) == "function", "Callback must be a function")
+	table.insert(log_callbacks, callback)
 end
 
 
