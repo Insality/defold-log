@@ -11,6 +11,7 @@ This is a default configuration for the Log module, all fields are optional, and
 level = TRACE
 level_release = ERROR
 info_block = %levelname| %time_tracking | %memory_tracking | %logger
+info_block_release = %levelname| %logger
 message_block = | %tab%message: %context %tab<%function>
 logger_block_width = 14
 max_log_length = 1024
@@ -24,12 +25,13 @@ This configuration section for `game.project` defines various settings:
 |---------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------| ------------------- |
 | **level**           | Sets the default logging level for development builds. In this case, `TRACE` and above levels will be logged, providing detailed information for debugging and monitoring.                                   | `TRACE`             |
 | **level_release**   | Determines the logging level for release builds, where `ERROR` and above levels will be logged, focusing on warnings and errors that are critical for a production environment. Use `FATAL` to silence all logs. | `ERROR`             |
-| **info_block**      | Defines the format of the info block in log messages, which includes the log level and logger name in this configuration.                                                                                     | `%levelname| %time_tracking | %memory_tracking | %logger` |
+| **info_block**      | Defines the format of the info block in log messages for **debug** builds, which includes the log level and logger name in this configuration.                                                               | `%levelname\| %time_tracking \| %memory_tracking \| %logger` |
+| **info_block_release** | Same as `info_block`, but for **release** builds. It is a separate setting so the tracking placeholders (and their runtime cost) are not shipped by accident.                                              | `%levelname\| %logger` |
 | **message_block**   | Sets the format for the message block, including the actual log message, any context provided, and the function from which the log was called.                                                               | `| %tab%message: %context %tab<%function>` |
 | **logger_block_width** | Defines the width of the logger block in log messages. This helps in aligning log messages for better readability. Default is 14.                                                                          | `14` |
 | **max_log_length**  | The maximum length of the log message. If the message exceeds this length, it will be truncated. Default is 1024.                                                                                            | `1024` |
 | **inspect_depth**   | The maximum depth of nested tables to inspect when logging. Default is 2.                                                                                                                                    | `2` |
-| **file**            | Optional global log file for all loggers. Relative path → project folder in editor, save directory on device. Absolute path used as-is. Empty disables. Can also be set at runtime via `log.set_file(path)`. | _(empty)_ |
+| **file**            | Optional global log file for all loggers. Relative path (`logs/x` or `/logs/x`) → project folder in editor, application save directory on device. Empty disables. Also via `log.set_file(path)`. | _(empty)_ |
 
 In the `[log]` configuration section for `game.project`, the `info_block` and `message_block` fields allow for dynamic content based on specific placeholders. These placeholders get replaced with actual log information at runtime, providing structured and informative log messages.
 
@@ -43,6 +45,8 @@ In the `[log]` configuration section for `game.project`, the `info_block` and `m
 | **%time_tracking**   | The time elapsed since the last entry in this logger instance. Time tracking will be enabled, if this placeholder is used.                                                                                   |
 | **%memory_tracking** | The memory allocated since the last entry in this logger instance. Memory tracking will be enabled, if this placeholder is used.                                                                             |
 | **%chronos_tracking**| The time elapsed since the last entry in this logger instance. Chronos extension will be used, if this placeholder is used.                                                                                  |
+
+> The tracking placeholders are only measured when they are present in the block that the current build actually uses. Release builds read `info_block_release`, which has no tracking by default.
 
 ### Message Block Placeholders
 
@@ -95,7 +99,7 @@ This will include memory tracking information in the log messages, showing the m
 
 >DEBUG:|   2.4kb | game.logger      |	Delayed message: just string 	<example/example.gui_script:39>`.
 
-Works only in debug mode, automatically disabled in release mode.
+Release builds use `info_block_release`, which has no tracking by default. Add the placeholder there too if you need tracking in a release build.
 
 
 ## Time Tracking

@@ -3,217 +3,222 @@ local formatter = require("log.internal.formatter")
 
 local M = {}
 
----@class log.state
----@field logs table<string, number>
-M.STATE = {
-	logs = sys.load(config.SAVE_PATH) or {}
-}
+-- Log file shared by all loggers, nil when disabled
+local global_file = nil
 
--- Global file path for all loggers (nil = disabled)
-M.global_file = nil
-
--- file path -> file handle, or false if open previously failed
+-- Resolved file path -> file handler, or false if the file can't be opened
 local FILE_HANDLERS = {}
 
+-- Personal log file of a logger. Weak keys, since it should not keep a logger alive.
+-- It's a separate table and not a logger field, because all loggers inherit
+-- the fields of the log module and would share its file
+local LOGGER_FILES = setmetatable({}, { __mode = "k" })
 
-local function save_state()
-	sys.save(config.SAVE_PATH, M.STATE.logs)
-end
+-- Every log file we ever created. Persisted between the game launches,
+-- so clear_log_files can remove the files from the previous sessions
+local known_files = sys.load(config.STATE_PATH) or {}
+
+-- Project folder, resolved once. False means "checked, not available"
+local project_folder = nil
 
 
----Return true if path looks like a native OS absolute path (Windows drive).
----Defold-style paths like `/logs/game.log` are treated as project-relative.
+---Close and forget a single cached file handler
 ---@param path string
----@return boolean
-local function is_windows_absolute(path)
-	return path:match("^%a:[/\\]") ~= nil
+local function close_handler(path)
+	local handler = FILE_HANDLERS[path]
+	if handler then
+		handler:flush()
+		handler:close()
+	end
+
+	FILE_HANDLERS[path] = nil
 end
 
 
----Ensure parent directory exists for a file path
+---Create the parent folder for a file path. Desktop only, on the devices
+---the save folder already exists and there is no shell to call
 ---@param filepath string
 local function ensure_parent_dir(filepath)
 	local dir = filepath:match("(.+)[/\\][^/\\]+$")
-	if not dir then
+	if not dir or config.IS_MOBILE then
 		return
 	end
 
 	if config.SYSTEM_NAME == "Windows" then
-		os.execute('mkdir "' .. dir:gsub("/", "\\") .. '"')
+		-- Windows mkdir creates the intermediate folders on its own
+		os.execute('mkdir "' .. dir:gsub("/", "\\") .. '" 2>nul')
 	else
 		os.execute('mkdir -p "' .. dir .. '"')
 	end
 end
 
 
----Resolve a log file path:
---- Windows absolute → as-is
---- Defold `/logs/x` or relative `logs/x` → project/logs/x (editor) or save file (device)
----@param path string
----@return string|nil
-function M.resolve_path(path)
-	if not path or path == "" then
-		return nil
-	end
-
-	if is_windows_absolute(path) then
-		return path
-	end
-
-	-- Strip Defold-style leading slash: /logs/game.log → logs/game.log
-	local relative = path:gsub("^/+", "")
-
-	local project_path = M.get_current_project_folder()
-	if project_path then
-		return project_path .. "/" .. relative
-	end
-
-	-- Device / no project folder: store under save directory
-	return sys.get_save_file(config.APP_NAME, relative)
-end
-
-
----Open (or reuse) a file handler and write one log line
+---Open (or reuse) a file handler and append one log line
 ---@param path string
 ---@param log_message string
 local function write_to_file(path, log_message)
 	local handler = FILE_HANDLERS[path]
+
 	if handler == nil then
-		ensure_parent_dir(path)
 		handler = io.open(path, "a")
-		-- Cache failures as false to avoid retrying open on every log
+		if not handler then
+			-- The folder may not exist yet: create it and retry once
+			ensure_parent_dir(path)
+			handler = io.open(path, "a")
+		end
+
+		-- Cache the failure as false to not retry the open on every message
 		FILE_HANDLERS[path] = handler or false
+
 		if handler then
-			M.STATE.logs[path] = socket.gettime()
-			save_state()
+			known_files[path] = true
+			sys.save(config.STATE_PATH, known_files)
 		end
 	end
 
 	if handler then
 		handler:write(log_message, "\n")
 		handler:flush()
-		M.STATE.logs[path] = socket.gettime()
 	end
 end
 
 
----Internal log callback for file writing
----@param logger table Logger instance
----@param level string Log level
----@param message string Original message
----@param context any Additional context
----@param log_message string Formatted log message
-function M.log_callback(logger, level, message, context, log_message)
-	if logger.file then
-		write_to_file(logger.file, log_message)
-	end
-
-	if M.global_file then
-		write_to_file(M.global_file, log_message)
-	end
-end
-
-
----Set global file for all loggers. Pass nil to disable.
----@param path string|nil Relative to project (editor) / save dir (device), or absolute
----@return string|nil resolved_path
-function M.set_file(path)
-	if not path then
-		M.global_file = nil
+---Resolve a relative log path: project folder in the editor, save folder on a device.
+---The leading `/` is optional Defold sugar and is stripped.
+---@param path string
+---@return string|nil
+local function resolve_path(path)
+	if not path or path == "" then
 		return nil
 	end
 
-	M.global_file = M.resolve_path(path)
-	return M.global_file
-end
-
-
----Get current global file path (resolved), or nil
----@return string|nil
-function M.get_file()
-	return M.global_file
-end
-
-
----Write this logger's messages to a .log file next to the calling script.
----File name is always the script basename (e.g. example.gui_script → example.log).
----@param logger table Logger instance
----@param debuginfo debuginfo Caller debug info
-function M.write_nearby_this_file(logger, debuginfo)
+	local relative = path:gsub("^/+", "")
 	local project_path = M.get_current_project_folder()
-	if not project_path then
-		return
-	end
 
-	local file_path = debuginfo.short_src
-	local folder_path = string.match(file_path, "(.+)/[^/]+$")
-	if not folder_path then
-		return
-	end
-
-	local name = formatter.get_default_logger_name(debuginfo)
-	logger.file = string.format("%s/%s/%s.log", project_path, folder_path, name)
+	return project_path and (project_path .. "/" .. relative) or sys.get_save_file(config.APP_NAME, relative)
 end
 
 
----Get current project folder (editor / desktop only; requires `pwd` and game.project nearby)
+---Get the project folder. Editor and desktop builds only: it takes the shell
+---working directory and checks that game.project is there
 ---@return string|nil
 function M.get_current_project_folder()
-	if not io.popen or html5 then
-		return nil
+	if project_folder ~= nil then
+		return project_folder or nil
 	end
 
-	local file = io.popen("pwd")
-	if not file then
-		return nil
-	end
+	project_folder = false
 
-	local pwd = file:read("*l")
-	file:close()
-
-	if not pwd then
-		return nil
-	end
-
-	-- Check the game.project file exists in this folder
-	local game_project_path = pwd .. "/game.project"
-	local game_project_file = io.open(game_project_path, "r")
-	if not game_project_file then
-		return nil
-	end
-
-	game_project_file:close()
-	return pwd
-end
-
-
----Clear all known log files (global + per-logger)
-function M.clear_log_files()
-	for file, _ in pairs(M.STATE.logs) do
-		os.remove(file)
-	end
-
-	M.STATE.logs = {}
-	save_state()
-end
-
-
----Close all log files and persist known log paths
-function M.close_log_files()
-	for path, handler in pairs(FILE_HANDLERS) do
-		if handler then
-			handler:flush()
-			handler:close()
+	if io.popen and not html5 then
+		local file = io.popen(config.SYSTEM_NAME == "Windows" and "cd" or "pwd")
+		local pwd = file and file:read("*l")
+		if file then
+			file:close()
 		end
-		FILE_HANDLERS[path] = nil
+
+		if pwd and pwd ~= "" then
+			-- Normalize Windows paths that may use backslashes
+			pwd = pwd:gsub("\\", "/")
+
+			local game_project = io.open(pwd .. "/game.project", "r")
+			if game_project then
+				game_project:close()
+				project_folder = pwd
+			end
+		end
 	end
 
-	save_state()
+	return project_folder or nil
 end
 
 
--- Auto-enable from game.project: [log] file = path
-if config.LOG_FILE and config.LOG_FILE ~= "" then
+---Write a formatted message to the personal logger file and to the shared one
+---@param logger logger Logger instance
+---@param log_message string Formatted log message
+function M.on_log(logger, log_message)
+	local logger_file = LOGGER_FILES[logger]
+
+	if logger_file then
+		write_to_file(logger_file, log_message)
+	end
+
+	if global_file and global_file ~= logger_file then
+		write_to_file(global_file, log_message)
+	end
+end
+
+
+---Set the log file for all loggers. Pass nil to disable
+---@param path string|nil Relative path, the leading `/` is optional
+---@return string|nil resolved_path
+function M.set_file(path)
+	local previous = global_file
+	global_file = path and resolve_path(path) or nil
+
+	if previous and previous ~= global_file then
+		close_handler(previous)
+	end
+
+	return global_file
+end
+
+
+---Get the current global log file path (resolved), or nil
+---@return string|nil
+function M.get_file()
+	return global_file
+end
+
+
+---Write this logger messages to a `<logger_name>.log` file next to the calling script
+---@param logger logger Logger instance
+---@param debuginfo debuginfo|nil Caller debug info
+---@return string|nil resolved_path
+function M.set_file_nearby(logger, debuginfo)
+	local project_path = M.get_current_project_folder()
+	local script_path = debuginfo and debuginfo.short_src
+	if not project_path or not script_path then
+		return nil
+	end
+
+	-- Support / and \ ; scripts in the project root use the project folder itself
+	local folder_path = string.match(script_path, "(.+)[/\\][^/\\]+$") or "."
+
+	local name = logger.name
+	if not name or name == "" or name == config.AUTO_NAME then
+		name = formatter.get_default_logger_name(debuginfo)
+	end
+
+	LOGGER_FILES[logger] = string.format("%s/%s/%s.log", project_path, folder_path, name)
+	return LOGGER_FILES[logger]
+end
+
+
+---Delete all known log files from the disk
+function M.clear_log_files()
+	-- Close the handlers first, so the remove works on Windows and does not
+	-- leave the writers attached to the deleted files on Unix
+	M.close_log_files()
+
+	for path, _ in pairs(known_files) do
+		os.remove(path)
+	end
+
+	known_files = {}
+	sys.save(config.STATE_PATH, known_files)
+end
+
+
+---Flush and close all opened log files
+function M.close_log_files()
+	for path, _ in pairs(FILE_HANDLERS) do
+		close_handler(path)
+	end
+end
+
+
+-- Auto enable the global log file from game.project: [log] file = path
+if config.LOG_FILE ~= "" then
 	M.set_file(config.LOG_FILE)
 end
 

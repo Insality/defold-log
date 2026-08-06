@@ -16,7 +16,6 @@ title = Defold Log
 version = 7
 publisher = Insality
 developer = Maksim Tuprikov, Insality
-write_log_file = 1
 dependencies#0 = https://github.com/d954mas/defold-utf8/archive/master.zip
 dependencies#1 = https://github.com/d954mas/defold-chronos/archive/refs/tags/1.0.1.zip
 
@@ -25,6 +24,4 @@ include_dirs = log
 
 [log]
 file = game.log
-info_block = %levelname| %time_tracking | %memory_tracking | %logger
-message_block = | %tab%message: %context %tab<%function>
 

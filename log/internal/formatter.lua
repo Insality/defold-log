@@ -8,6 +8,22 @@ local M = {}
 -- Cache for source to name mapping
 local SOURCE_TO_NAME_MAP = {}
 
+-- Used when the caller can not be resolved from the stack
+local UNKNOWN_CALLER = { short_src = "?", currentline = 0 }
+
+
+---A gsub replacement string treats `%` as an escape character, so every value
+---taken from the game itself has to be escaped before it is inserted
+---@param text string
+---@return string
+local function escape(text)
+	if string.find(text, "%", 1, true) then
+		return (string.gsub(text, "%%", "%%%%"))
+	end
+
+	return text
+end
+
 
 ---Converts table to one-line string
 ---@param t table
@@ -58,31 +74,33 @@ local function table_to_string(t, depth, result)
 end
 
 
----Return the basename of the current file
----@param debuginfo debuginfo
+---Return the basename of the script from the debug info
+---@param debuginfo debuginfo|nil
 ---@return string
 function M.get_default_logger_name(debuginfo)
-	local current_script_path = debuginfo.short_src
+	local script_path = debuginfo and debuginfo.short_src or UNKNOWN_CALLER.short_src
 
-	if SOURCE_TO_NAME_MAP[current_script_path] then
-		return SOURCE_TO_NAME_MAP[current_script_path]
+	local name = SOURCE_TO_NAME_MAP[script_path]
+	if not name then
+		name = string.match(script_path, "([^/\\]+)$") or script_path
+		name = string.match(name, "(.*)%..*$") or name
+		SOURCE_TO_NAME_MAP[script_path] = name
 	end
 
-	local basename = string.match(current_script_path, "([^/\\]+)$")
-	basename = string.match(basename, "(.*)%..*$")
-	SOURCE_TO_NAME_MAP[current_script_path] = basename
-	return basename
+	return name
 end
 
 
 ---Format log message
----@param logger table Logger instance
+---@param logger logger Logger instance
 ---@param level string TRACE, DEBUG, INFO, WARN, ERROR
 ---@param message string Message to log
 ---@param context any Additional data to log
----@param caller_info debuginfo Caller debug info from the public log method
+---@param caller_info debuginfo|nil Caller debug info from the public log method
 ---@return string
 function M.format(logger, level, message, context, caller_info)
+	caller_info = caller_info or UNKNOWN_CALLER
+
 	-- Format info block
 	local string_info_block = config.INFO_BLOCK
 
@@ -144,7 +162,7 @@ function M.format(logger, level, message, context, caller_info)
 			name_to_insert = string_m.sub(name_to_insert, 1, config.LOGGER_BLOCK_WIDTH)
 		end
 
-		string_info_block = string_m.gsub(string_info_block, "%%logger", name_to_insert)
+		string_info_block = string_m.gsub(string_info_block, "%%logger", escape(name_to_insert))
 	end
 
 	if config.IS_FORMAT_LEVEL_NAME then
@@ -152,7 +170,7 @@ function M.format(logger, level, message, context, caller_info)
 	end
 
 	if config.IS_FORMAT_LEVEL_SHORT then
-		string_info_block = string_m.gsub(string_info_block, "%%levelshort", string.sub(config.LEVEL_SHORT_TO_CONSOLE_MAP[level], 1, 5))
+		string_info_block = string_m.gsub(string_info_block, "%%levelshort", config.LEVEL_SHORT_TO_CONSOLE_MAP[level])
 	end
 
 	-- Format message block
@@ -166,7 +184,7 @@ function M.format(logger, level, message, context, caller_info)
 	end
 
 	if config.IS_FORMAT_MESSAGE then
-		string_message_block = string_m.gsub(string_message_block, "%%message", message or "")
+		string_message_block = string_m.gsub(string_message_block, "%%message", escape(message))
 	end
 
 	if config.IS_FORMAT_CONTEXT then
@@ -175,11 +193,12 @@ function M.format(logger, level, message, context, caller_info)
 			local is_table = type(context) == "table"
 			record_context = is_table and table_to_string(context, config.INSPECT_DEPTH) or tostring(context)
 		end
-		string_message_block = string_m.gsub(string_message_block, "%%context", record_context)
+		string_message_block = string_m.gsub(string_message_block, "%%context", escape(record_context))
 	end
 
 	if config.IS_FORMAT_FUNCTION then
-		string_message_block = string_m.gsub(string_message_block, "%%function", caller_info.short_src .. ":" .. caller_info.currentline)
+		local caller = caller_info.short_src .. ":" .. caller_info.currentline
+		string_message_block = string_m.gsub(string_message_block, "%%function", escape(caller))
 	end
 
 	return string_info_block .. string_message_block

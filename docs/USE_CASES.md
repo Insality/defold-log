@@ -123,7 +123,7 @@ log.add_callback(function(logger, level, message, context, log_message)
 end)
 ```
 
-`clear_callbacks()` removes only user callbacks. Internal file-writing handlers stay registered.
+`clear_callbacks()` removes only your callbacks, the file writing is not affected.
 
 
 ## 8. File logging
@@ -133,11 +133,9 @@ end)
 ```lua
 local log = require("log.log")
 
--- Relative: project folder in editor, save directory on device
+-- Always relative: project folder in editor, save directory on device
 log.set_file("logs/game.log")
-
--- Or absolute / explicit save path
-log.set_file(sys.get_save_file("MyGame", "debug.log"))
+-- log.set_file("/logs/game.log") -- same (leading / is optional)
 ```
 
 Or zero-code via `game.project`:
@@ -151,10 +149,12 @@ file = logs/game.log
 
 ```lua
 local logger = log.get_logger("combat")
-logger:write_nearby_this_file() -- <project>/<script_folder>/<script_basename>.log
+logger:set_file_nearby() -- <project>/<script_folder>/<logger_name>.log
 ```
 
-Global and per-logger sinks can be used together.
+Uses `logger.name` (e.g. `combat.log`). If the logger has an auto name, the script basename is used instead.
+
+The shared and the per-logger files can be used together.
 
 Call `log.final()` **once** on application shutdown — typically from your main/bootstrap script:
 

@@ -16,7 +16,7 @@
 - **Format Customization**: Allows customizing the log message format.
 - **Performance Tracking**: Provides features to log execution time and memory use.
 - **Callbacks**: Add custom handlers for remote logging, analytics, or extra processing.
-- **File Logging**: Write all logs to one file (`set_file` / `log.file`) and/or per-logger nearby files.
+- **File Logging**: Write all logs to one file (`set_file` / `log.file`) and/or to a per-logger file next to the script.
 
 ## Setup
 
@@ -68,7 +68,7 @@ log.clear_callbacks()
 -- File logging
 log.set_file("logs/game.log") -- all loggers → one file
 log.get_file()
-log:write_nearby_this_file()  -- this logger → nearby .log
+log:set_file_nearby()         -- this logger → nearby .log
 log.final()                   -- call once on app shutdown
 log.clear_log_files()
 
@@ -80,7 +80,7 @@ logger:debug(message, [data])
 logger:info(message, [data])
 logger:warn(message, [data])
 logger:error(message, [data])
-logger:write_nearby_this_file()
+logger:set_file_nearby()
 
 -- Short version
 local logger = require("log.log")()
@@ -127,7 +127,7 @@ log.clear_callbacks()
 ```
 Add custom handlers for log messages. Callbacks run in addition to the default console output. Use them for remote logging, analytics, or extra processing.
 
-`clear_callbacks()` removes only user callbacks. Internal handlers (such as file writing via `write_nearby_this_file`) are preserved.
+`clear_callbacks()` removes only your callbacks, the file writing is not affected.
 
 - **Callback parameters:** `(logger, level, message, context, log_message)`
   - `logger`: The logger instance that generated the log
@@ -150,26 +150,25 @@ log.remove_callback(on_log)
 log.clear_callbacks()
 ```
 
-**log.set_file / log.write_nearby_this_file / log.final / log.clear_log_files**
+**log.set_file / logger:set_file_nearby / log.final / log.clear_log_files**
 ---
 ```lua
-log.set_file(path)                 -- all loggers → one file
-log.set_file(nil)                  -- disable global file
-logger:write_nearby_this_file()    -- this logger → nearby .log
+log.set_file(path)          -- all loggers → one file
+log.set_file(nil)           -- disable the shared file
+logger:set_file_nearby()    -- this logger → nearby .log
 log.final()
 log.clear_log_files()
 ```
 
 Two ways to write logs to disk (can be combined):
 
-1. **Global file** — every logger writes to one shared file:
+1. **Shared file** — every logger writes to one file:
    - `log.set_file("logs/game.log")`
    - or in `game.project`: `file = logs/game.log`
-   - Relative path → project folder in editor, `sys.get_save_file` on device
-   - Absolute path → used as-is
-2. **Per-logger file** — `write_nearby_this_file()` writes only that logger to `<script_basename>.log` next to the script (editor/desktop)
+   - Path is always relative (`logs/game.log` or `/logs/game.log`) → project folder in editor, save directory on device
+2. **Per-logger file** — `set_file_nearby()` writes only that logger to `<logger_name>.log` next to the script. Editor and desktop builds only, since it requires the project folder. If the logger has an auto name, the script basename is used instead.
 
-- Call `log.final()` **once** on application shutdown (from your main/bootstrap script `final`) to flush and close handlers.
+- Call `log.final()` **once** on application shutdown (from your main/bootstrap script `final`) to flush and close the files.
 - `clear_log_files()` deletes known `.log` files from disk.
 
 ```lua
@@ -180,7 +179,7 @@ log.set_file("logs/game.log")
 
 local logger = log.get_logger("combat")
 -- Optional extra split file for this logger only:
-logger:write_nearby_this_file()
+logger:set_file_nearby()
 
 -- In your main collection script (call once for the whole project):
 function final(self)
@@ -374,8 +373,11 @@ log:error("Hello, world!")
 ### **V7**
 - Refactor into modules: `log/internal/config.lua`, `formatter.lua`, `file_writer.lua`
 - Add callback API: `add_callback`, `remove_callback`, `clear_callbacks`
-- Add file logging: `set_file`, `write_nearby_this_file`, `final`, `clear_log_files`
+- Add file logging: `set_file`, `set_file_nearby`, `final`, `clear_log_files`
+- Add `info_block_release` setting, so the tracking placeholders can't leak into a release build
 - Allow `nil` message (e.g. `logger:debug()`) to update memory/time tracking without printing
+- Fix: `%` inside a message, a context or a logger name no longer breaks the formatting
+- Fix: `force_logger_level_in_debug` is now ignored in release builds, as its name implies
 - Move detailed docs to `docs/CONFIGURATION.md` and `docs/USE_CASES.md`
 
 </details>

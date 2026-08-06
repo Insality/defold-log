@@ -1,13 +1,15 @@
 local log = require("log.log")
 
--- All loggers → one shared file (also configured via game.project [log] file = ...)
+-- All loggers write to one shared file. The same can be set in game.project: [log] file = ...
 -- log.set_file("logs/game.log")
 
-local logger = log.get_logger("logger", "TRACE")
--- Optional: also write this logger to a file next to the script
-logger:write_nearby_this_file()
+local logger = log.get_logger("game.example")
+local logger_two = log.get_logger("game.example2", "WARN")
 
-local function expensiveOperation()
+-- Additionally write this logger to game.example.log next to this script
+logger:set_file_nearby()
+
+local function expensive_operation()
 	for index = 1, 1000000 do
 		local a = { a = "s" }
 	end
@@ -15,16 +17,16 @@ end
 
 
 function init(self)
-	-- Optional: wipe previous session's known .log files
+	-- Remove the log files from the previous launch
 	log.clear_log_files()
 
-	-- Custom callback example (file writing is handled via set_file / write_nearby)
 	log.add_callback(function(logger_instance, level, message, context, log_message)
 		if level == "ERROR" then
 			print("[callback] captured error from", logger_instance.name)
 		end
 	end)
 
+	-- The log module itself is a logger, its name is the current script name
 	log:trace("trace", { key = "value" })
 	log:info("info", { key = "value" })
 	log:debug("debug", { key = "value" })
@@ -33,21 +35,16 @@ function init(self)
 
 	----
 
-	logger:trace("init")
-
-	logger:debug("Debug message", {
-		value = 2, debug = "message"
-	})
-
-	logger:info("Here is some info", logger)
-	logger:warn("This is a warning", log)
-	logger:error("This is an error", "just string")
-
 	logger:trace("Trace message")
-	logger:debug("Debug message", {key = "value"})
-	logger:info("Info message", {key = "value"})
-	logger:warn("Warn message", {key = "value"})
-	logger:error("Error message", {key = "value"})
+	logger:debug("Debug message", { value = 2, debug = "message" })
+	logger:info("Info message", { key = "value" })
+	logger:warn("Warn message", { key = "value" })
+	logger:error("Error message", "just string")
+
+	-- This logger is forced to WARN, so trace and info are skipped
+	logger_two:trace("Trace message")
+	logger_two:info("Info message")
+	logger_two:warn("Warn message")
 
 	logger:info("Table to string", { inner_table = {
 		a = 1,
@@ -56,10 +53,10 @@ function init(self)
 	}})
 
 	logger:trace("Before expensive operation")
-	expensiveOperation()
+	expensive_operation()
 	logger:trace("After expensive operation")
 
-	-- Silent tracking tick: nil message updates memory/time without printing
+	-- A nil message refreshes the memory/time tracking without any output
 	logger:debug()
 
 	local counter = 0
