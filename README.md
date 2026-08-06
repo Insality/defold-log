@@ -6,15 +6,17 @@
 
 # Log
 
-**Log** - is a single file Lua library for [Defold](https://defold.com/) game engine, enabling efficient logging for game development. It simplifies debugging and monitoring by allowing developers to generate detailed logs that can be adjusted for different stages of development.
+**Log** - is a library for [Defold](https://defold.com/) game engine, enabling efficient logging for game development. It simplifies debugging and monitoring by allowing developers to generate detailed logs that can be adjusted for different stages of development.
 
 ## Features
 
-- **Log Levels**: Includes TRACE, DEBUG, INFO, WARN, and ERROR for varied detail in logging.
+- **Log Levels**: Includes TRACE, DEBUG, INFO, WARN, ERROR, and FATAL for varied detail in logging.
 - **Build-specific Logging**: Allows changing log verbosity between debug and release builds.
 - **Detailed Context**: Supports logging with additional information for context, such as variable values or state information.
 - **Format Customization**: Allows customizing the log message format.
 - **Performance Tracking**: Provides features to log execution time and memory use.
+- **Callbacks**: Add custom handlers for remote logging, analytics, or extra processing.
+- **File Logging**: Write all logs to one file (`set_file` / `log.file`) and/or to a per-logger file next to the script.
 
 ## Setup
 
@@ -22,10 +24,10 @@
 
 Open your `game.project` file and add the following line to the dependencies field under the project section:
 
-**[Log](https://github.com/Insality/defold-log/archive/refs/tags/6.zip)**
+**[Log](https://github.com/Insality/defold-log/archive/refs/tags/7.zip)**
 
 ```
-https://github.com/Insality/defold-log/archive/refs/tags/6.zip
+https://github.com/Insality/defold-log/archive/refs/tags/7.zip
 ```
 
 ### Library Size
@@ -37,150 +39,9 @@ https://github.com/Insality/defold-log/archive/refs/tags/6.zip
 | HTML5            | **2.55 KB**  |
 | Desktop / Mobile | **4.29 KB**  |
 
-### Configuration [Optional]
+### Configuration [optional]
 
-You have the option to configure logging preferences directly within your `game.project` file. This allows you to customize the log message format, log levels, and other settings based on your project's requirements.
-
-This is a default configuration for the Log module, all fields are optional, and this is a default value:
-
-```ini
-[log]
-level = TRACE
-level_release = ERROR
-info_block = %levelname[%logger]
-message_block = %space%message: %context %tab<%function>
-logger_block_width = 14
-max_log_length = 1024
-inspect_depth = 1
-```
-
-This configuration section for `game.project` defines various settings:
-
-| Setting             | Description                                                                                                                                                                                                 | Default Value     |
-|---------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------| ------------------- |
-| **level**           | Sets the default logging level for development builds. In this case, `TRACE` and above levels will be logged, providing detailed information for debugging and monitoring.                                   | `TRACE`             |
-| **level_release**   | Determines the logging level for release builds, where `ERROR` and above levels will be logged, focusing on warnings and errors that are critical for a production environment. Use `FATAL` to silence all logs. | `ERROR`             |
-| **info_block**      | Defines the format of the info block in log messages, which includes the log level and logger name in this configuration.                                                                                     | `%levelname[%logger]` |
-| **message_block**   | Sets the format for the message block, including the actual log message, any context provided, and the function from which the log was called.                                                               | `%space%message: %context %tab<%function>` |
-| **logger_block_width** | Defines the width of the logger block in log messages. This helps in aligning log messages for better readability. Default is 14.                                                                          | `14` |
-| **max_log_length**  | The maximum length of the log message. If the message exceeds this length, it will be truncated. Default is 1024.                                                                                            | `1024` |
-| **inspect_depth**   | The maximum depth of nested tables to inspect when logging. Default is 1.                                                                                                                                    | `1` |
-
-In the `[log]` configuration section for `game.project`, the `info_block` and `message_block` fields allow for dynamic content based on specific placeholders. These placeholders get replaced with actual log information at runtime, providing structured and informative log messages.
-
-#### Info Block Placeholders
-
-| Placeholder          | Description                                                                                                                                                                                                 |
-|----------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| **%logger**          | The name of the logger instance producing the log message. Helps in identifying the source of the log message.                                                                                               |
-| **%levelname**       | The name of the log level (e.g., DEBUG, INFO, WARN, etc.). Provides clarity on the severity or nature of the log message. Should be placed at the beginning of the log message for color highlighting in the Defold Console. |
-| **%levelshort**      | The short name of the log level (e.g., D, I, W, E). Provides a compact representation of the log level. But Defold Console will be not able to highlight it.                                                 |
-| **%time_tracking**   | The time elapsed since the last entry in this logger instance. Time tracking will be enabled, if this placeholder is used.                                                                                   |
-| **%memory_tracking** | The memory allocated since the last entry in this logger instance. Memory tracking will be enabled, if this placeholder is used.                                                                             |
-| **%chronos_tracking**| The time elapsed since the last entry in this logger instance. Chronos extension will be used, if this placeholder is used.                                                                                  |
-
-#### Message Block Placeholders
-
-| Placeholder  | Description                                                                                                                                                                                                 |
-|--------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| **%tab**     | A tab character for formatting log messages.                                                                                                                                                                |
-| **%space**   | A space character for formatting log messages. Usually used before or end of the message, where you can't use just space in game.project.                                                                         |
-| **%message** | The actual log message content. This is the primary information you want to log.                                                                                                                            |
-| **%context** | Any additional context provided along with the log message. It can be useful for providing extra information relevant to the log message (e.g., variable values, state information).                        |
-| **%function**| The function name or location from where the log message was generated. Helps in pinpointing where in the codebase a particular log message is coming from, aiding in debugging.                             |
-
-
-#### Output Prefabs
-
-```ini
-[log]
-info_block = %levelname[%logger]
-message_block = %space%message: %context %tab<%function>
-```
-
-**Preview:**
-
-```
-DEBUG:[game.logger     ] Debug message: {debug: message, value: 2} 	<example/example.gui_script:17>
-```
-
----
-
-```ini
-[log]
-info_block = %levelname| %time_tracking | %memory_tracking | %logger
-message_block = | %tab%message: %context %tab<%function>
-```
-
-**Preview:**
-
-```
-DEBUG:| 166.71ms |   2.4kb | game.logger      |	Delayed message: just string 	<example/example.gui_script:39>
-```
-
-### Memory Tracking
-
-To enable memory tracking, add `%memory_tracking` to the `info_block` in the `game.project` file:
-
-```ini
-info_block = %levelname| %memory_tracking | %logger
-```
-
-This will include memory tracking information in the log messages, showing the memory allocated since the last entry in this logger instance.
-
->DEBUG:|   2.4kb | game.logger      |	Delayed message: just string 	<example/example.gui_script:39>`.
-
-Works only in debug mode, automatically disabled in release mode.
-
-
-### Time Tracking
-
-To enable time tracking, add `%time_tracking` to the `info_block` in the `game.project` file:
-
-```ini
-info_block = %levelname| %time_tracking | %logger
-```
-
-This will include time tracking information in the log messages, showing the time elapsed since the last entry in this logger instance.
-
->DEBUG:|  0.01ms | game.logger      |	Delayed message: just string 	<example/example.gui_script:39>`.
-
-
-### Using High Resolution Timer Extension
-
-The Log module can utilize the Chronos extension for Defold to enable time tracking with microsecond or better precision (`QueryPerformanceCounter` on Windows). This is optional.
-
-If you want to use the extension, add the following line to the dependencies field in your `game.project` file:
-
-**[defold-chronos](https://github.com/d954mas/defold-chronos)**
-```
-https://github.com/d954mas/defold-chronos/archive/refs/tags/1.0.1.zip
-```
-
-Then to use the high-resolution timer, you need to add `%chronos_tracking` to the `info_block` in the `game.project` file:
-
-```ini
-[log]
-info_block = %levelname| %chronos_tracking | %logger
-```
-
-This will include time tracking information in the log messages, showing the time elapsed since the last entry in this logger instance.
-
->DEBUG:|  0.00001ms | game.logger      |	Delayed message: just string 	<example/example.gui_script:39>`.
-
-
-### Using Native UTF8 Extension
-
-The Log module can utilize the native UTF8 extension for Defold to handle UTF-8 strings. This is optional but recommended for better performance.
-
-If you want to use the native UTF8 extension, add the following line to the dependencies field in your `game.project` file:
-
-**[defold-utf8](https://github.com/d954mas/defold-utf8)**
-```
-https://github.com/d954mas/defold-utf8/archive/master.zip
-```
-
-The Log module automatically detects the presence of the native UTF8 extension and uses it if available. If the extension is not present, the Log module will use the built-in Lua string functions.
+Read the [Configuration](docs/CONFIGURATION.md) file for detailed information on how to configure the Log module.
 
 ### Default view
 
@@ -191,12 +52,25 @@ The Log module automatically detects the presence of the native UTF8 extension a
 ### Quick API Reference
 
 ```lua
+-- You can use log module as logger itself; the name will be the current script file name.
 local log = require("log.log")
 log:trace(message, [data])
 log:debug(message, [data])
 log:info(message, [data])
 log:warn(message, [data])
 log:error(message, [data])
+
+-- Custom handlers for log messages
+log.add_callback(function(logger, level, message, context, log_message) end)
+log.remove_callback(callback)
+log.clear_callbacks()
+
+-- File logging
+log.set_file("/logs/game.log") -- all loggers → one file
+log.get_file()
+log:set_file_nearby()         -- this logger → nearby .log
+log.final()                   -- call once on app shutdown
+log.clear_log_files()
 
 -- Create a new logger instance with a specific logger name.
 -- Default logger name is file name of the current script.
@@ -206,8 +80,9 @@ logger:debug(message, [data])
 logger:info(message, [data])
 logger:warn(message, [data])
 logger:error(message, [data])
+logger:set_file_nearby()
 
--- There is short version of this
+-- Short version
 local logger = require("log.log")()
 local logger = require("log.log")([name], [level])
 ```
@@ -220,7 +95,7 @@ To start using the Log module in your project, you first need to import it. This
 local log = require("log.log")
 ```
 
-> The log module itself is logger instance with name equals to `project.title`. All `logger` methods can be invoked on `log` module itself. But general practice it to create a specific logger for each module.
+> The log module itself is a logger instance. All `logger` methods can be invoked on the `log` module itself. The usual practice is to create a specific logger for each module.
 
 ### Core Functions
 
@@ -243,9 +118,78 @@ Create a new logger instance with an optional forced log level for debugging pur
 local my_logger = log.get_logger("game.logger")
 ```
 
+**log.add_callback / log.remove_callback / log.clear_callbacks**
+---
+```lua
+log.add_callback(callback)
+log.remove_callback(callback)
+log.clear_callbacks()
+```
+Add custom handlers for log messages. Callbacks run in addition to the default console output. Use them for remote logging, analytics, or extra processing.
+
+`clear_callbacks()` removes only your callbacks, the file writing is not affected.
+
+- **Callback parameters:** `(logger, level, message, context, log_message)`
+  - `logger`: The logger instance that generated the log
+  - `level`: The log level (TRACE, DEBUG, INFO, WARN, ERROR, FATAL)
+  - `message`: The original message string
+  - `context`: Any additional context data passed to the log function
+  - `log_message`: The formatted log message string (as it appears in console)
+
+- **Usage Example:**
+
+```lua
+local function on_log(logger, level, message, context, log_message)
+    if level == "ERROR" then
+        -- send to analytics / remote logger
+    end
+end
+
+log.add_callback(on_log)
+log.remove_callback(on_log)
+log.clear_callbacks()
+```
+
+**log.set_file / logger:set_file_nearby / log.final / log.clear_log_files**
+---
+```lua
+log.set_file(path)          -- all loggers → one file
+log.set_file(nil)           -- disable the shared file
+logger:set_file_nearby()    -- this logger → nearby .log
+log.final()
+log.clear_log_files()
+```
+
+Two ways to write logs to disk (can be combined):
+
+1. **Shared file** — every logger writes to one file:
+   - `log.set_file("/logs/game.log")`
+   - or in `game.project`: `file = /logs/game.log`
+   - Path is always relative (`/logs/game.log`) → project folder in editor, save directory on device
+2. **Per-logger file** — `set_file_nearby()` writes only that logger to `<logger_name>.log` next to the script. Editor and desktop builds only, since it requires the project folder. If the logger has an auto name, the script basename is used instead.
+
+- Call `log.final()` **once** on application shutdown (from your main/bootstrap script `final`) to flush, close and disable the files. Further messages will not reopen them.
+- `clear_log_files()` deletes known `.log` files from disk.
+
+```lua
+local log = require("log.log")
+
+-- All logs from all loggers:
+log.set_file("/logs/game.log")
+
+local logger = log.get_logger("combat")
+-- Optional extra split file for this logger only:
+logger:set_file_nearby()
+
+-- In your main collection script (call once for the whole project):
+function final(self)
+    log.final()
+end
+```
+
 ### Logger Instance Methods
 
-Once a logger instance is created, you can use the following methods to log messages at different levels. Each logging method allows including optional data for context, which can be especially useful for debugging. However, note that passing data can lead to additional memory allocation, which might impact performance.
+Once a logger instance is created or directly called from log module, you can use the following methods to log messages at different levels. Each logging method allows including optional data for context, which can be especially useful for debugging. However, note that passing data can lead to additional memory allocation, which might impact performance.
 
 **logger:trace**
 ---
@@ -255,7 +199,7 @@ logger:trace(message, [data])
 Log a message at the TRACE level. Trace is typically used to log the start and end of functions or specific events. While it's not recommended to pass data to trace due to potential memory allocation, sometimes it can be useful for in-depth debugging.
 
 - **Parameters:**
-  - `message`: The log message.
+  - `message`: The log message. If `nil`, memory/time tracking is still updated without printing.
   - `data` (optional): Additional data to include with the log message.
 
 - **Usage Example:**
@@ -263,7 +207,6 @@ Log a message at the TRACE level. Trace is typically used to log the start and e
 ```lua
 my_logger:trace("Trace message")
 
--- TRACE:[game.logger     ]	Trace message:  	<example/example.gui_script:55>
 -- TRACE:|   0.01ms |   0.4kb | game.logger     | 	Trace message:  	<example/example.gui_script:54>
 ```
 
@@ -279,7 +222,6 @@ Log a message at the DEBUG level. Debug is suitable for detailed system informat
 ```lua
 my_logger:debug("Debug message", { key = "value" })
 
--- DEBUG:[game.logger     ]	Debug message: {key: value} 	<example/example.gui_script:56>
 -- DEBUG:|   0.00ms |   0.1kb | game.logger     | 	Debug message: {key: value} 	<example/example.gui_script:55>
 ```
 
@@ -295,7 +237,6 @@ Log a message at the INFO level. Info is used for general system information und
 ```lua
 my_logger:info("Info message", { key = "value" })
 
--- INFO: [game.logger     ]	Info message: {key: value} 	<example/example.gui_script:57>
 -- INFO: |   0.00ms |   0.1kb | game.logger     | 	Info message: {key: value} 	<example/example.gui_script:56>
 ```
 
@@ -311,7 +252,6 @@ Log a message at the WARN level. Warn is intended for potentially harmful situat
 ```lua
 my_logger:warn("Warn message", { key = "value" })
 
--- WARN: [game.logger     ]	Warn message: {key: value} 	<example/example.gui_script:58>
 -- WARN: |   0.00ms |   0.1kb | game.logger     | 	Warn message: {key: value} 	<example/example.gui_script:57>
 ```
 
@@ -327,7 +267,6 @@ Log a message at the ERROR level. Error indicates serious issues that have occur
 ```lua
 my_logger:error("Error message", {error = "file not found"})
 
--- ERROR:[game.logger     ]	Error message: {key: value} 	<example/example.gui_script:59>
 -- ERROR:|   0.00ms |   0.1kb | game.logger     | 	Error message: {key: value} 	<example/example.gui_script:58>
 ```
 
@@ -356,7 +295,7 @@ end
 
 ### Use Cases
 
-Read the [Use Cases](USE_CASES.md) file for detailed examples of how to use the Log module in different scenarios.
+Read the [Use Cases](docs/USE_CASES.md) file for detailed examples of how to use the Log module in different scenarios.
 
 
 ## License
@@ -423,8 +362,18 @@ local log = require("log.log")
 
 log:trace("Hello, world!", { key = "value" })
 log:info("Hello, world!")
-log:erro("Hello, world!")
+log:error("Hello, world!")
 ```
+
+### **V7**
+- Refactor into modules: `log/internal/config.lua`, `formatter.lua`, `file_writer.lua`
+- Add callback API: `add_callback`, `remove_callback`, `clear_callbacks`
+- Add file logging: `set_file`, `set_file_nearby`, `final`, `clear_log_files`
+- Add `info_block_release` setting, so the tracking placeholders can't leak into a release build
+- Allow `nil` message (e.g. `logger:debug()`) to update memory/time tracking without printing
+- Fix: `%` inside a message, a context or a logger name no longer breaks the formatting
+- Fix: `force_logger_level_in_debug` is now ignored in release builds, as its name implies
+- Move detailed docs to `docs/CONFIGURATION.md` and `docs/USE_CASES.md`
 
 </details>
 

@@ -5,7 +5,8 @@
 		"utf8",
 		"socket",
 		"timer",
-		"init"
+		"init",
+		"html5"
 	],
 	"Lua.workspace.library": [
 		"~/Library/Application Support/Code/User/globalStorage/astronachos.defold",

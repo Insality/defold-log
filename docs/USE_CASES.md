@@ -56,7 +56,7 @@ Defold's console allows filtering logs by level or logger name, enabling you to 
 
 For example, your can set up filters with "TRACE" to show only trace logs, "DEBUG" to show only debug logs, and so on. or "[game" to show only logs from the "game" logger.
 
-![](media/filter_logs.png)
+![](../media/filter_logs.png)
 
 
 ## 4. Integrating the Log Module into Your Library
@@ -96,17 +96,82 @@ logger:warn("Something happened here:", {
 This allow to users of your library to set their logger instance and catch logs from your library.
 
 
-## 6. Using log module as a logger itself
+## 5. Using log module as a logger itself
 
 ```lua
 local log = require("log.log")
 
 --- You can invoke a log module itself to write log message
---- The logger name will be equals to project.title field from game.project
---- But general practice is to create specific logger for each module
+--- The logger name will be equals to file name of the current script
 log:trace("message", { foo = bar })
 log:debug("message", { foo = bar })
 log:info("message", { foo = bar })
 log:warn("message", { foo = bar })
 log:error("message", { foo = bar })
 ```
+
+
+## 6. Custom callbacks
+
+```lua
+local log = require("log.log")
+
+log.add_callback(function(logger, level, message, context, log_message)
+    if level == "ERROR" then
+        -- send to analytics / crash reporter
+    end
+end)
+```
+
+`clear_callbacks()` removes only your callbacks, the file writing is not affected.
+
+
+## 7. File logging
+
+### All logs → one file
+
+```lua
+local log = require("log.log")
+
+-- Always relative: project folder in editor, save directory on device
+log.set_file("/logs/game.log")
+```
+
+Or zero-code via `game.project`:
+
+```ini
+[log]
+file = /logs/game.log
+```
+
+### Per-logger file (editor / desktop)
+
+```lua
+local logger = log.get_logger("combat")
+logger:set_file_nearby() -- <project>/<script_folder>/<logger_name>.log
+```
+
+Uses `logger.name` (e.g. `combat.log`). If the logger has an auto name, the script basename is used instead.
+
+The shared and the per-logger files can be used together.
+
+Call `log.final()` **once** on application shutdown — typically from your main/bootstrap script. It flushes, closes and disables file logging:
+
+```lua
+-- main.script (or bootstrap)
+function final(self)
+    log.final()
+end
+```
+
+
+## 8. Silent memory / time tracking tick
+
+When `%memory_tracking` / `%time_tracking` / `%chronos_tracking` is enabled, you can call a log method without a message to refresh tracking without printing:
+
+```lua
+logger:debug() -- updates tracking, no console output
+logger:info("After work") -- shows diff since the silent tick
+```
+
+`%time_tracking` and `%chronos_tracking` are mutually exclusive — use only one of them.
