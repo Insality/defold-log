@@ -31,7 +31,7 @@ This configuration section for `game.project` defines various settings:
 | **logger_block_width** | Defines the width of the logger block in log messages. This helps in aligning log messages for better readability. Default is 14.                                                                          | `14` |
 | **max_log_length**  | The maximum length of the log message. If the message exceeds this length, it will be truncated. Default is 1024.                                                                                            | `1024` |
 | **inspect_depth**   | The maximum depth of nested tables to inspect when logging. Default is 2.                                                                                                                                    | `2` |
-| **file**            | Optional global log file for all loggers. Relative path (`logs/x` or `/logs/x`) → project folder in editor, application save directory on device. Empty disables. Also via `log.set_file(path)`. | _(empty)_ |
+| **file**            | Optional global log file for all loggers. Relative path (`/logs/game.log`) → project folder in editor, application save directory on device. Empty disables. Also via `log.set_file(path)`. | _(empty)_ |
 
 In the `[log]` configuration section for `game.project`, the `info_block` and `message_block` fields allow for dynamic content based on specific placeholders. These placeholders get replaced with actual log information at runtime, providing structured and informative log messages.
 
@@ -42,18 +42,20 @@ In the `[log]` configuration section for `game.project`, the `info_block` and `m
 | **%logger**          | The name of the logger instance producing the log message. Helps in identifying the source of the log message.                                                                                               |
 | **%levelname**       | The name of the log level (e.g., DEBUG, INFO, WARN, etc.). Provides clarity on the severity or nature of the log message. Should be placed at the beginning of the log message for color highlighting in the Defold Console. |
 | **%levelshort**      | The short name of the log level (e.g., D, I, W, E). Provides a compact representation of the log level. But Defold Console will not be able to highlight it.                                                 |
-| **%time_tracking**   | The time elapsed since the last entry in this logger instance. Time tracking will be enabled, if this placeholder is used.                                                                                   |
+| **%time_tracking**   | The time elapsed since the last entry in this logger instance. Time tracking will be enabled, if this placeholder is used. Mutually exclusive with `%chronos_tracking`.                                                     |
 | **%memory_tracking** | The memory allocated since the last entry in this logger instance. Memory tracking will be enabled, if this placeholder is used.                                                                             |
-| **%chronos_tracking**| The time elapsed since the last entry in this logger instance. Chronos extension will be used, if this placeholder is used.                                                                                  |
+| **%chronos_tracking**| The time elapsed since the last entry in this logger instance. Chronos extension will be used, if this placeholder is used. Mutually exclusive with `%time_tracking`.                                                        |
 
 > The tracking placeholders are only measured when they are present in the block that the current build actually uses. Release builds read `info_block_release`, which has no tracking by default.
+
+> `%time_tracking` and `%chronos_tracking` are mutually exclusive — use only one of them in the format block.
 
 ### Message Block Placeholders
 
 | Placeholder  | Description                                                                                                                                                                                                 |
 |--------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | **%tab**     | A tab character for formatting log messages.                                                                                                                                                                |
-| **%space**   | A space character for formatting log messages. Usually used before or end of the message, where you can't use just space in game.project.                                                                         |
+| **%space**   | A space character for formatting log messages. Usually used before or at the end of the message, where you can't use just space in game.project.                                                                         |
 | **%message** | The actual log message content. This is the primary information you want to log.                                                                                                                            |
 | **%context** | Any additional context provided along with the log message. It can be useful for providing extra information relevant to the log message (e.g., variable values, state information).                        |
 | **%function**| The function name or location from where the log message was generated. Helps in pinpointing where in the codebase a particular log message is coming from, aiding in debugging.                             |
@@ -126,7 +128,7 @@ If you want to use the extension, add the following line to the dependencies fie
 https://github.com/d954mas/defold-chronos/archive/refs/tags/1.0.1.zip
 ```
 
-Then to use the high-resolution timer, you need to add `%chronos_tracking` to the `info_block` in the `game.project` file:
+Then to use the high-resolution timer, you need to add `%chronos_tracking` to the `info_block` in the `game.project` file (do not combine it with `%time_tracking`):
 
 ```ini
 [log]

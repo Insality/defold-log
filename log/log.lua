@@ -8,8 +8,8 @@ local file_writer = require("log.internal.file_writer")
 ---@class log
 ---@field name string
 ---@field level string
----@field private _last_gc_memory number|nil
----@field private _last_message_time number|nil
+---@field _last_gc_memory number|nil
+---@field _last_message_time number|nil
 local M = {}
 
 local METATABLE = { __index = M }
@@ -142,8 +142,8 @@ end
 
 
 ---Set the log file for all loggers, in addition to the console and the personal logger files.
----The path is always relative: project folder in the editor, save folder on a device.
----The leading `/` is optional. Pass nil to disable
+---The path is always relative (`/logs/game.log`): project folder in the editor, save folder on a device.
+---Pass nil to disable
 ---@param path string|nil
 ---@return string|nil resolved_path
 function M.set_file(path)
@@ -172,10 +172,11 @@ function M.clear_log_files()
 end
 
 
----Flush and close all opened log files.
----Call it once on the application shutdown, e.g. from the `final` of your bootstrap script
+---Flush, close and disable all log files.
+---Call it once on the application shutdown, e.g. from the `final` of your bootstrap script.
+---Further log messages will not reopen the files until `set_file` / `set_file_nearby` is called again
 function M.final()
-	file_writer.close_log_files()
+	file_writer.final()
 end
 
 

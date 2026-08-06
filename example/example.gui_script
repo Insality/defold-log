@@ -1,7 +1,7 @@
 local log = require("log.log")
 
 -- All loggers write to one shared file. The same can be set in game.project: [log] file = ...
--- log.set_file("logs/game.log")
+-- log.set_file("/logs/game.log")
 
 local logger = log.get_logger("game.example")
 local logger_two = log.get_logger("game.example2", "WARN")
@@ -17,7 +17,7 @@ end
 
 
 function init(self)
-	-- Remove the log files from the previous launch
+	-- Wipe .log files left from the previous launch (os.remove is silent if missing)
 	log.clear_log_files()
 
 	log.add_callback(function(logger_instance, level, message, context, log_message)

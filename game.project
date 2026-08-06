@@ -23,5 +23,5 @@ dependencies#1 = https://github.com/d954mas/defold-chronos/archive/refs/tags/1.0
 include_dirs = log
 
 [log]
-file = game.log
+file = /game.log
 

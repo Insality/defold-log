@@ -66,7 +66,7 @@ log.remove_callback(callback)
 log.clear_callbacks()
 
 -- File logging
-log.set_file("logs/game.log") -- all loggers → one file
+log.set_file("/logs/game.log") -- all loggers → one file
 log.get_file()
 log:set_file_nearby()         -- this logger → nearby .log
 log.final()                   -- call once on app shutdown
@@ -163,19 +163,19 @@ log.clear_log_files()
 Two ways to write logs to disk (can be combined):
 
 1. **Shared file** — every logger writes to one file:
-   - `log.set_file("logs/game.log")`
-   - or in `game.project`: `file = logs/game.log`
-   - Path is always relative (`logs/game.log` or `/logs/game.log`) → project folder in editor, save directory on device
+   - `log.set_file("/logs/game.log")`
+   - or in `game.project`: `file = /logs/game.log`
+   - Path is always relative (`/logs/game.log`) → project folder in editor, save directory on device
 2. **Per-logger file** — `set_file_nearby()` writes only that logger to `<logger_name>.log` next to the script. Editor and desktop builds only, since it requires the project folder. If the logger has an auto name, the script basename is used instead.
 
-- Call `log.final()` **once** on application shutdown (from your main/bootstrap script `final`) to flush and close the files.
+- Call `log.final()` **once** on application shutdown (from your main/bootstrap script `final`) to flush, close and disable the files. Further messages will not reopen them.
 - `clear_log_files()` deletes known `.log` files from disk.
 
 ```lua
 local log = require("log.log")
 
 -- All logs from all loggers:
-log.set_file("logs/game.log")
+log.set_file("/logs/game.log")
 
 local logger = log.get_logger("combat")
 -- Optional extra split file for this logger only:
@@ -207,7 +207,6 @@ Log a message at the TRACE level. Trace is typically used to log the start and e
 ```lua
 my_logger:trace("Trace message")
 
--- TRACE:[game.logger     ]	Trace message:  	<example/example.gui_script:55>
 -- TRACE:|   0.01ms |   0.4kb | game.logger     | 	Trace message:  	<example/example.gui_script:54>
 ```
 
@@ -223,7 +222,6 @@ Log a message at the DEBUG level. Debug is suitable for detailed system informat
 ```lua
 my_logger:debug("Debug message", { key = "value" })
 
--- DEBUG:[game.logger     ]	Debug message: {key: value} 	<example/example.gui_script:56>
 -- DEBUG:|   0.00ms |   0.1kb | game.logger     | 	Debug message: {key: value} 	<example/example.gui_script:55>
 ```
 
@@ -239,7 +237,6 @@ Log a message at the INFO level. Info is used for general system information und
 ```lua
 my_logger:info("Info message", { key = "value" })
 
--- INFO: [game.logger     ]	Info message: {key: value} 	<example/example.gui_script:57>
 -- INFO: |   0.00ms |   0.1kb | game.logger     | 	Info message: {key: value} 	<example/example.gui_script:56>
 ```
 
@@ -255,7 +252,6 @@ Log a message at the WARN level. Warn is intended for potentially harmful situat
 ```lua
 my_logger:warn("Warn message", { key = "value" })
 
--- WARN: [game.logger     ]	Warn message: {key: value} 	<example/example.gui_script:58>
 -- WARN: |   0.00ms |   0.1kb | game.logger     | 	Warn message: {key: value} 	<example/example.gui_script:57>
 ```
 
@@ -271,7 +267,6 @@ Log a message at the ERROR level. Error indicates serious issues that have occur
 ```lua
 my_logger:error("Error message", {error = "file not found"})
 
--- ERROR:[game.logger     ]	Error message: {key: value} 	<example/example.gui_script:59>
 -- ERROR:|   0.00ms |   0.1kb | game.logger     | 	Error message: {key: value} 	<example/example.gui_script:58>
 ```
 

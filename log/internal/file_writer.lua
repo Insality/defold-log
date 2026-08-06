@@ -44,6 +44,9 @@ local function ensure_parent_dir(filepath)
 		return
 	end
 
+	-- Quotes would break the shell command; strip them from the path
+	dir = dir:gsub('"', "")
+
 	if config.SYSTEM_NAME == "Windows" then
 		-- Windows mkdir creates the intermediate folders on its own
 		os.execute('mkdir "' .. dir:gsub("/", "\\") .. '" 2>nul')
@@ -149,7 +152,7 @@ end
 
 
 ---Set the log file for all loggers. Pass nil to disable
----@param path string|nil Relative path, the leading `/` is optional
+---@param path string|nil Relative path (`/logs/game.log`), the leading `/` is optional Defold sugar
 ---@return string|nil resolved_path
 function M.set_file(path)
 	local previous = global_file
@@ -213,6 +216,16 @@ end
 function M.close_log_files()
 	for path, _ in pairs(FILE_HANDLERS) do
 		close_handler(path)
+	end
+end
+
+
+---Flush, close and disable all file logging. Further messages won't reopen the files
+function M.final()
+	M.close_log_files()
+	global_file = nil
+	for logger in pairs(LOGGER_FILES) do
+		LOGGER_FILES[logger] = nil
 	end
 end
 
