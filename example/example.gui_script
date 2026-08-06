@@ -1,7 +1,10 @@
 local log = require("log.log")
-log:write_nearby_this_file()
+
+-- All loggers → one shared file (also configured via game.project [log] file = ...)
+-- log.set_file("logs/game.log")
 
 local logger = log.get_logger("logger", "TRACE")
+-- Optional: also write this logger to a file next to the script
 logger:write_nearby_this_file()
 
 local function expensiveOperation()
@@ -12,14 +15,13 @@ end
 
 
 function init(self)
+	-- Optional: wipe previous session's known .log files
 	log.clear_log_files()
-	log.add_callback(function(logger, level, message, context, log_message)
-		if logger.file then
-			local file = io.open(logger.file, "a")
-			if file then
-				file:write(log_message .. "\n")
-				file:close()
-			end
+
+	-- Custom callback example (file writing is handled via set_file / write_nearby)
+	log.add_callback(function(logger_instance, level, message, context, log_message)
+		if level == "ERROR" then
+			print("[callback] captured error from", logger_instance.name)
 		end
 	end)
 
@@ -37,34 +39,9 @@ function init(self)
 		value = 2, debug = "message"
 	})
 
-	logger:info("Here is some info")
-	logger:info("Here is some info")
-
-	-- Now we logger show the memory about for this table allocation
-	local t = { "one", "two", "three" }
-
 	logger:info("Here is some info", logger)
 	logger:warn("This is a warning", log)
 	logger:error("This is an error", "just string")
-
-	timer.delay(0.5, false, function()
-		logger:info("Delayed message", "just string")
-		timer.delay(1/6, true, function()
-			if math.random() > 0.4 then
-				logger:info("Delayed message", "just string")
-			else
-				log:debug("Delayed message", "just string")
-			end
-		end)
-	end)
-
-	timer.delay(1.5, true, function()
-		local b = { "one", "two", "three" }
-		for index = 1, 4000 do
-			local a = {{}, {}, {}, {}}
-			table.insert(b, a)
-		end
-	end)
 
 	logger:trace("Trace message")
 	logger:debug("Debug message", {key = "value"})
@@ -82,6 +59,9 @@ function init(self)
 	expensiveOperation()
 	logger:trace("After expensive operation")
 
+	-- Silent tracking tick: nil message updates memory/time without printing
+	logger:debug()
+
 	local counter = 0
 	timer.delay(0.01, true, function()
 		counter = counter + 1
@@ -92,13 +72,6 @@ function init(self)
 end
 
 
-function update(self, dt)
-	logger:info("Update", dt)
-end
-
-
-
 function final(self)
-	log.close_log_files()
-	log.clear_log_files()
+	log.final()
 end

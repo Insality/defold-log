@@ -28,19 +28,19 @@ M.GAME_LOG_LEVEL = sys.get_config_string(M.IS_DEBUG and "log.level" or "log.leve
 M.AUTO_NAME = "log_auto_name"
 M.LOGGER_BLOCK_WIDTH = sys.get_config_int("log.logger_block_width", 14)
 M.MAX_LOG_LENGTH = sys.get_config_int("log.max_log_length", 1024)
-M.INSPECT_DEPTH = sys.get_config_int("log.inspect_depth", 1)
+M.INSPECT_DEPTH = sys.get_config_int("log.inspect_depth", 2)
+
+-- Optional global log file (relative to project in editor, save path on device)
+M.LOG_FILE = sys.get_config_string("log.file", "")
 
 -- Feature flags
 M.IS_TIME_TRACK = M.IS_DEBUG and string_m.find(sys.get_config_string("log.info_block", ""), "%%time_tracking") ~= nil
 M.IS_MEMORY_TRACK = M.IS_DEBUG and string_m.find(sys.get_config_string("log.info_block", ""), "%%memory_tracking") ~= nil
 M.IS_CHRONOS_TRACK = M.IS_DEBUG and string_m.find(sys.get_config_string("log.info_block", ""), "%%chronos_tracking") ~= nil
 
--- Check if write_log_file is enabled in game.project
-M.IS_WRITE_LOG_FILE = sys.get_config_string("project.write_log_file", "0") ~= "0"
-
 -- Format blocks
-M.INFO_BLOCK = sys.get_config_string("log.info_block", "%levelname[%logger]")
-M.MESSAGE_BLOCK = sys.get_config_string("log.message_block", "%space%message: %context %tab<%function>")
+M.INFO_BLOCK = sys.get_config_string("log.info_block", "%levelname| %time_tracking | %memory_tracking | %logger")
+M.MESSAGE_BLOCK = sys.get_config_string("log.message_block", "| %tab%message: %context %tab<%function>")
 
 -- Format flags
 M.IS_FORMAT_LOGGER = string_m.find(M.INFO_BLOCK, "%%logger") ~= nil

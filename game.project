@@ -13,7 +13,7 @@ input_method = HiddenInputField
 
 [project]
 title = Defold Log
-version = 6
+version = 7
 publisher = Insality
 developer = Maksim Tuprikov, Insality
 write_log_file = 1
@@ -24,10 +24,7 @@ dependencies#1 = https://github.com/d954mas/defold-chronos/archive/refs/tags/1.0
 include_dirs = log
 
 [log]
-level = TRACE
-level_release = ERROR
-logger_block_width = 14
+file = game.log
 info_block = %levelname| %time_tracking | %memory_tracking | %logger
 message_block = | %tab%message: %context %tab<%function>
-inspect_depth = 2
 

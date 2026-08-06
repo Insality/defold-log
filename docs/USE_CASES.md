@@ -102,11 +102,75 @@ This allow to users of your library to set their logger instance and catch logs 
 local log = require("log.log")
 
 --- You can invoke a log module itself to write log message
---- The logger name will be equals to project.title field from game.project
---- But general practice is to create specific logger for each module
+--- The logger name will be equals to file name of the current script
 log:trace("message", { foo = bar })
 log:debug("message", { foo = bar })
 log:info("message", { foo = bar })
 log:warn("message", { foo = bar })
 log:error("message", { foo = bar })
+```
+
+
+## 7. Custom callbacks
+
+```lua
+local log = require("log.log")
+
+log.add_callback(function(logger, level, message, context, log_message)
+    if level == "ERROR" then
+        -- send to analytics / crash reporter
+    end
+end)
+```
+
+`clear_callbacks()` removes only user callbacks. Internal file-writing handlers stay registered.
+
+
+## 8. File logging
+
+### All logs → one file
+
+```lua
+local log = require("log.log")
+
+-- Relative: project folder in editor, save directory on device
+log.set_file("logs/game.log")
+
+-- Or absolute / explicit save path
+log.set_file(sys.get_save_file("MyGame", "debug.log"))
+```
+
+Or zero-code via `game.project`:
+
+```ini
+[log]
+file = logs/game.log
+```
+
+### Per-logger file (editor / desktop)
+
+```lua
+local logger = log.get_logger("combat")
+logger:write_nearby_this_file() -- <project>/<script_folder>/<script_basename>.log
+```
+
+Global and per-logger sinks can be used together.
+
+Call `log.final()` **once** on application shutdown — typically from your main/bootstrap script:
+
+```lua
+-- main.script (or bootstrap)
+function final(self)
+    log.final()
+end
+```
+
+
+## 9. Silent memory / time tracking tick
+
+When `%memory_tracking` / `%time_tracking` / `%chronos_tracking` is enabled, you can call a log method without a message to refresh tracking without printing:
+
+```lua
+logger:debug() -- updates tracking, no console output
+logger:info("After work") -- shows diff since the silent tick
 ```

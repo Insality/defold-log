@@ -80,8 +80,9 @@ end
 ---@param level string TRACE, DEBUG, INFO, WARN, ERROR
 ---@param message string Message to log
 ---@param context any Additional data to log
+---@param caller_info debuginfo Caller debug info from the public log method
 ---@return string
-function M.format(logger, level, message, context)
+function M.format(logger, level, message, context, caller_info)
 	-- Format info block
 	local string_info_block = config.INFO_BLOCK
 
@@ -133,7 +134,7 @@ function M.format(logger, level, message, context)
 		local name_to_insert = logger.name
 
 		if name_to_insert == config.AUTO_NAME then
-			name_to_insert = M.get_default_logger_name(debug.getinfo(4, "S"))
+			name_to_insert = M.get_default_logger_name(caller_info)
 		end
 
 		local logger_name_length = string_m.len(name_to_insert)
@@ -164,8 +165,8 @@ function M.format(logger, level, message, context)
 		string_message_block = string_m.gsub(string_message_block, "%%space", " ")
 	end
 
-	if config.IS_FORMAT_MESSAGE and message then
-		string_message_block = string_m.gsub(string_message_block, "%%message", message)
+	if config.IS_FORMAT_MESSAGE then
+		string_message_block = string_m.gsub(string_message_block, "%%message", message or "")
 	end
 
 	if config.IS_FORMAT_CONTEXT then
@@ -178,7 +179,6 @@ function M.format(logger, level, message, context)
 	end
 
 	if config.IS_FORMAT_FUNCTION then
-		local caller_info = debug.getinfo(4)
 		string_message_block = string_m.gsub(string_message_block, "%%function", caller_info.short_src .. ":" .. caller_info.currentline)
 	end
 

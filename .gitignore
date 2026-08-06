@@ -10,3 +10,5 @@ manifest.public.der
 manifest.private.der
 /.editor_settings
 log.txt
+logs/
+*.log

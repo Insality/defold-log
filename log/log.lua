@@ -1,50 +1,29 @@
 local config = require("log.internal.config")
 local formatter = require("log.internal.formatter")
-local file_writter = require("log.internal.file_writter")
+local file_writer = require("log.internal.file_writer")
 
 ---@alias logger log
 
----@overload fun(name: string, force_logger_level_in_debug: string): logger
+---@overload fun(name: string?, force_logger_level_in_debug: string?): logger
 ---@class log
 ---@field name string
 ---@field level string
----@field file string
----@field private _last_gc_memory number
----@field private _last_message_time number
+---@field file string|nil
+---@field private _last_gc_memory number|nil
+---@field private _last_message_time number|nil
 local M = {}
+local METATABLE = { __index = M }
 
--- Use file_writter's state
-M.STATE = file_writter.STATE
+-- Use file_writer's state
+M.STATE = file_writer.STATE
 
--- Custom callbacks for log messages
-local log_callbacks = {
-	file_writter.log_callback
+-- Internal callbacks (e.g. file writer) are not affected by clear_callbacks
+local internal_callbacks = {
+	file_writer.log_callback
 }
 
--- Handler for Defold's log.txt file (if write_log_file is enabled)
-local log_txt_handler = nil
-
-
----Get or create log.txt file handler
----@return file*|nil
-local function get_log_txt_handler()
-	if not config.IS_WRITE_LOG_FILE then
-		return nil
-	end
-
-	if log_txt_handler then
-		return log_txt_handler
-	end
-
-	local project_path = file_writter.get_current_project_folder()
-	if not project_path then
-		return nil
-	end
-
-	local log_txt_path = project_path .. "/log.txt"
-	log_txt_handler = io.open(log_txt_path, "a")
-	return log_txt_handler
-end
+-- User-defined callbacks
+local user_callbacks = {}
 
 
 ---Format log message
@@ -52,9 +31,10 @@ end
 ---@param level string TRACE, DEBUG, INFO, WARN, ERROR
 ---@param message string Message to log
 ---@param context any Additional data to log
+---@param caller_info debuginfo
 ---@return string
-function M:format(level, message, context)
-	return formatter.format(self, level, message, context)
+function M:format(level, message, context, caller_info)
+	return formatter.format(self, level, message, context, caller_info)
 end
 
 
@@ -69,7 +49,10 @@ function M:log(level, message, context)
 	end
 
 	if message then
-		local log_message = self:format(level, message, context)
+		-- Capture caller here (public method -> log -> user) so formatting
+		-- does not depend on stack depth / tail-call optimizations.
+		local caller_info = debug.getinfo(3, "Sl")
+		local log_message = self:format(level, message, context, caller_info)
 
 		if config.IS_MOBILE then
 			print(log_message)
@@ -78,20 +61,12 @@ function M:log(level, message, context)
 			io.stdout:flush()
 		end
 
-		-- Write to log.txt if write_log_file is enabled in game.project
-		-- Note: Defold also writes stdout to log.txt when write_log_file=1,
-		-- but we write directly to ensure continuous logging even if Defold buffers output
-		if config.IS_WRITE_LOG_FILE then
-			local log_file = get_log_txt_handler()
-			if log_file then
-				log_file:write(log_message, "\n")
-				log_file:flush()
-			end
+		-- Call internal and user callbacks
+		for index = 1, #internal_callbacks do
+			internal_callbacks[index](self, level, message, context, log_message)
 		end
-
-		-- Additionally call all custom callbacks
-		for index = 1, #log_callbacks do
-			log_callbacks[index](self, level, message, context, log_message)
+		for index = 1, #user_callbacks do
+			user_callbacks[index](self, level, message, context, log_message)
 		end
 	end
 
@@ -110,80 +85,99 @@ end
 
 
 ---Add a custom handler for log messages
----@param callback function Function that receives (logger, level, message, context, log_message)
+---@param callback fun(logger: logger, level: string, message: string, context: any, log_message: string)
 function M.add_callback(callback)
 	assert(type(callback) == "function", "Callback must be a function")
-	table.insert(log_callbacks, callback)
+	table.insert(user_callbacks, callback)
 end
 
 
----Remove a specific callback
+---Remove a specific user callback
 ---@param callback function The callback function to remove
 function M.remove_callback(callback)
-	for i, cb in ipairs(log_callbacks) do
+	for i, cb in ipairs(user_callbacks) do
 		if cb == callback then
-			table.remove(log_callbacks, i)
+			table.remove(user_callbacks, i)
 			break
 		end
 	end
 end
 
 
----Clear all callbacks
+---Clear all user callbacks (internal callbacks such as file writing are preserved)
 function M.clear_callbacks()
-	log_callbacks = {}
+	user_callbacks = {}
 end
 
 
 ---Log message with TRACE level
----@param message string? Message to log
----@param data any
+---@param message string? Message to log. Nil still updates memory/time tracking.
+---@param data any Additional context data
 function M:trace(message, data)
 	self:log(config.TRACE, message, data)
 end
 
 
 ---Log message with DEBUG level
----@param data any
----@param message string Message to log
+---@param message string? Message to log. Nil still updates memory/time tracking.
+---@param data any Additional context data
 function M:debug(message, data)
 	self:log(config.DEBUG, message, data)
 end
 
 
 ---Log message with INFO level
----@param message string
----@param data any
+---@param message string? Message to log. Nil still updates memory/time tracking.
+---@param data any Additional context data
 function M:info(message, data)
 	self:log(config.INFO, message, data)
 end
 
 
 ---Log message with WARN level
----@param message string
----@param data any
+---@param message string? Message to log. Nil still updates memory/time tracking.
+---@param data any Additional context data
 function M:warn(message, data)
 	self:log(config.WARN, message, data)
 end
 
 
 ---Log message with ERROR level
----@param message string
----@param data any
+---@param message string? Message to log. Nil still updates memory/time tracking.
+---@param data any Additional context data
 function M:error(message, data)
 	self:log(config.ERROR, message, data)
 end
 
 
----Write log message to file
+---Enable writing this logger's messages to a .log file next to the calling script.
+---Works in editor/desktop only (needs project folder via `pwd`).
 function M:write_nearby_this_file()
-	file_writter.write_nearby_this_file(self)
+	file_writer.write_nearby_this_file(self, debug.getinfo(2, "S"))
+end
+
+
+---Set a global file sink for ALL loggers (in addition to console / per-logger files).
+---Relative paths: project folder in editor, `sys.get_save_file` on device.
+---Pass nil to disable.
+---@param path string|nil
+---@return string|nil resolved_path
+function M.set_file(path)
+	return file_writer.set_file(path)
+end
+
+
+---Get current global log file path (resolved), or nil if disabled
+---@return string|nil
+function M.get_file()
+	return file_writer.get_file()
 end
 
 
 ---Get current project folder
+---@return string|nil
 function M.get_current_project_folder()
-	return file_writter.get_current_project_folder()
+	return file_writer.get_current_project_folder()
 end
 
 
@@ -210,26 +204,20 @@ function M.get_logger(logger_name, force_logger_level_in_debug)
 		end
 	end
 
-	return setmetatable(instance, { __index = M })
+	return setmetatable(instance, METATABLE)
 end
 
 
----Clear all log files
+---Delete all known logger .log files from disk
 function M.clear_log_files()
-	file_writter.clear_log_files()
+	file_writer.clear_log_files()
 end
 
 
----Close all log files
-function M.close_log_files()
-	file_writter.close_log_files()
-
-	-- Close log.txt handler
-	if log_txt_handler then
-		log_txt_handler:flush()
-		log_txt_handler:close()
-		log_txt_handler = nil
-	end
+---Flush and close all open logger file handlers.
+---Call once on application shutdown (e.g. from your main/bootstrap script `final`).
+function M.final()
+	file_writer.close_log_files()
 end
 
 
@@ -245,9 +233,15 @@ end
 -- Set up the default logger instance
 M.name = config.AUTO_NAME
 M.level = config.GAME_LOG_LEVEL
+M.file = nil
+M._last_gc_memory = nil
+M._last_message_time = nil
 
 return setmetatable(M, {
-	__call = function(self, name, force_logger_level_in_debug)
+	__call = function(_, name, force_logger_level_in_debug)
+		if not name then
+			name = formatter.get_default_logger_name(debug.getinfo(2, "S"))
+		end
 		return M.get_logger(name, force_logger_level_in_debug)
 	end
 })

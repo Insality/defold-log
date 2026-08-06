@@ -6,15 +6,17 @@
 
 # Log
 
-**Log** - is a single file Lua library for [Defold](https://defold.com/) game engine, enabling efficient logging for game development. It simplifies debugging and monitoring by allowing developers to generate detailed logs that can be adjusted for different stages of development.
+**Log** - is a library for [Defold](https://defold.com/) game engine, enabling efficient logging for game development. It simplifies debugging and monitoring by allowing developers to generate detailed logs that can be adjusted for different stages of development.
 
 ## Features
 
-- **Log Levels**: Includes TRACE, DEBUG, INFO, WARN, and ERROR for varied detail in logging.
+- **Log Levels**: Includes TRACE, DEBUG, INFO, WARN, ERROR, and FATAL for varied detail in logging.
 - **Build-specific Logging**: Allows changing log verbosity between debug and release builds.
 - **Detailed Context**: Supports logging with additional information for context, such as variable values or state information.
 - **Format Customization**: Allows customizing the log message format.
 - **Performance Tracking**: Provides features to log execution time and memory use.
+- **Callbacks**: Add custom handlers for remote logging, analytics, or extra processing.
+- **File Logging**: Write all logs to one file (`set_file` / `log.file`) and/or per-logger nearby files.
 
 ## Setup
 
@@ -22,10 +24,10 @@
 
 Open your `game.project` file and add the following line to the dependencies field under the project section:
 
-**[Log](https://github.com/Insality/defold-log/archive/refs/tags/6.zip)**
+**[Log](https://github.com/Insality/defold-log/archive/refs/tags/7.zip)**
 
 ```
-https://github.com/Insality/defold-log/archive/refs/tags/6.zip
+https://github.com/Insality/defold-log/archive/refs/tags/7.zip
 ```
 
 ### Library Size
@@ -50,6 +52,7 @@ Read the [Configuration](docs/CONFIGURATION.md) file for detailed information on
 ### Quick API Reference
 
 ```lua
+-- You can use log module as logger itself; the name will be the current script file name.
 local log = require("log.log")
 log:trace(message, [data])
 log:debug(message, [data])
@@ -57,8 +60,17 @@ log:info(message, [data])
 log:warn(message, [data])
 log:error(message, [data])
 
--- Set custom handler for log messages
-log.set_callback(function(logger, level, message, context, log_message) end)
+-- Custom handlers for log messages
+log.add_callback(function(logger, level, message, context, log_message) end)
+log.remove_callback(callback)
+log.clear_callbacks()
+
+-- File logging
+log.set_file("logs/game.log") -- all loggers → one file
+log.get_file()
+log:write_nearby_this_file()  -- this logger → nearby .log
+log.final()                   -- call once on app shutdown
+log.clear_log_files()
 
 -- Create a new logger instance with a specific logger name.
 -- Default logger name is file name of the current script.
@@ -68,8 +80,9 @@ logger:debug(message, [data])
 logger:info(message, [data])
 logger:warn(message, [data])
 logger:error(message, [data])
+logger:write_nearby_this_file()
 
--- There is short version of this
+-- Short version
 local logger = require("log.log")()
 local logger = require("log.log")([name], [level])
 ```
@@ -82,7 +95,7 @@ To start using the Log module in your project, you first need to import it. This
 local log = require("log.log")
 ```
 
-> The log module itself is logger instance with name equals to `project.title`. All `logger` methods can be invoked on `log` module itself. But general practice it to create a specific logger for each module.
+> The log module itself is a logger instance. All `logger` methods can be invoked on the `log` module itself. The usual practice is to create a specific logger for each module.
 
 ### Core Functions
 
@@ -105,40 +118,79 @@ Create a new logger instance with an optional forced log level for debugging pur
 local my_logger = log.get_logger("game.logger")
 ```
 
-**log.set_callback**
+**log.add_callback / log.remove_callback / log.clear_callbacks**
 ---
 ```lua
-log.set_callback(callback)
+log.add_callback(callback)
+log.remove_callback(callback)
+log.clear_callbacks()
 ```
-Set a custom handler for log messages. This allows you to intercept and process log messages for additional purposes such as file logging, remote logging, or custom formatting. The callback is called in addition to the default console output.
+Add custom handlers for log messages. Callbacks run in addition to the default console output. Use them for remote logging, analytics, or extra processing.
 
-- **Parameters:**
-  - `callback`: A function that receives `(logger, level, message, context, log_message)` parameters, or `nil` to remove the callback.
-    - `logger`: The logger instance that generated the log
-    - `level`: The log level (TRACE, DEBUG, INFO, WARN, ERROR, FATAL)
-    - `message`: The original message string
-    - `context`: Any additional context data passed to the log function
-    - `log_message`: The formatted log message string (as it appears in console)
+`clear_callbacks()` removes only user callbacks. Internal handlers (such as file writing via `write_nearby_this_file`) are preserved.
+
+- **Callback parameters:** `(logger, level, message, context, log_message)`
+  - `logger`: The logger instance that generated the log
+  - `level`: The log level (TRACE, DEBUG, INFO, WARN, ERROR, FATAL)
+  - `message`: The original message string
+  - `context`: Any additional context data passed to the log function
+  - `log_message`: The formatted log message string (as it appears in console)
 
 - **Usage Example:**
 
 ```lua
--- Set up file logging
-log.set_callback(function(logger, level, message, context, log_message)
-    local file = io.open("game.log", "a")
-    if file then
-        file:write(log_message .. "\n")
-        file:close()
+local function on_log(logger, level, message, context, log_message)
+    if level == "ERROR" then
+        -- send to analytics / remote logger
     end
-end)
+end
 
--- Remove callback
-log.set_callback(nil)
+log.add_callback(on_log)
+log.remove_callback(on_log)
+log.clear_callbacks()
+```
+
+**log.set_file / log.write_nearby_this_file / log.final / log.clear_log_files**
+---
+```lua
+log.set_file(path)                 -- all loggers → one file
+log.set_file(nil)                  -- disable global file
+logger:write_nearby_this_file()    -- this logger → nearby .log
+log.final()
+log.clear_log_files()
+```
+
+Two ways to write logs to disk (can be combined):
+
+1. **Global file** — every logger writes to one shared file:
+   - `log.set_file("logs/game.log")`
+   - or in `game.project`: `file = logs/game.log`
+   - Relative path → project folder in editor, `sys.get_save_file` on device
+   - Absolute path → used as-is
+2. **Per-logger file** — `write_nearby_this_file()` writes only that logger to `<script_basename>.log` next to the script (editor/desktop)
+
+- Call `log.final()` **once** on application shutdown (from your main/bootstrap script `final`) to flush and close handlers.
+- `clear_log_files()` deletes known `.log` files from disk.
+
+```lua
+local log = require("log.log")
+
+-- All logs from all loggers:
+log.set_file("logs/game.log")
+
+local logger = log.get_logger("combat")
+-- Optional extra split file for this logger only:
+logger:write_nearby_this_file()
+
+-- In your main collection script (call once for the whole project):
+function final(self)
+    log.final()
+end
 ```
 
 ### Logger Instance Methods
 
-Once a logger instance is created, you can use the following methods to log messages at different levels. Each logging method allows including optional data for context, which can be especially useful for debugging. However, note that passing data can lead to additional memory allocation, which might impact performance.
+Once a logger instance is created or directly called from log module, you can use the following methods to log messages at different levels. Each logging method allows including optional data for context, which can be especially useful for debugging. However, note that passing data can lead to additional memory allocation, which might impact performance.
 
 **logger:trace**
 ---
@@ -148,7 +200,7 @@ logger:trace(message, [data])
 Log a message at the TRACE level. Trace is typically used to log the start and end of functions or specific events. While it's not recommended to pass data to trace due to potential memory allocation, sometimes it can be useful for in-depth debugging.
 
 - **Parameters:**
-  - `message`: The log message.
+  - `message`: The log message. If `nil`, memory/time tracking is still updated without printing.
   - `data` (optional): Additional data to include with the log message.
 
 - **Usage Example:**
@@ -316,8 +368,15 @@ local log = require("log.log")
 
 log:trace("Hello, world!", { key = "value" })
 log:info("Hello, world!")
-log:erro("Hello, world!")
+log:error("Hello, world!")
 ```
+
+### **V7**
+- Refactor into modules: `log/internal/config.lua`, `formatter.lua`, `file_writer.lua`
+- Add callback API: `add_callback`, `remove_callback`, `clear_callbacks`
+- Add file logging: `set_file`, `write_nearby_this_file`, `final`, `clear_log_files`
+- Allow `nil` message (e.g. `logger:debug()`) to update memory/time tracking without printing
+- Move detailed docs to `docs/CONFIGURATION.md` and `docs/USE_CASES.md`
 
 </details>
 
