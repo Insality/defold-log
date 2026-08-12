@@ -24,10 +24,10 @@
 
 Open your `game.project` file and add the following line to the dependencies field under the project section:
 
-**[Log](https://github.com/Insality/defold-log/archive/refs/tags/7.zip)**
+**[Log](https://github.com/Insality/defold-log/archive/refs/tags/8.zip)**
 
 ```
-https://github.com/Insality/defold-log/archive/refs/tags/7.zip
+https://github.com/Insality/defold-log/archive/refs/tags/8.zip
 ```
 
 ### Library Size
@@ -165,8 +165,8 @@ Two ways to write logs to disk (can be combined):
 1. **Shared file** — every logger writes to one file:
    - `log.set_file("/logs/game.log")`
    - or in `game.project`: `file = /logs/game.log`
-   - Path is always relative (`/logs/game.log`) → project folder in editor, save directory on device
-2. **Per-logger file** — `set_file_nearby()` writes only that logger to `<logger_name>.log` next to the script. Editor and desktop builds only, since it requires the project folder. If the logger has an auto name, the script basename is used instead.
+   - Path is always relative (`/logs/game.log`) → project folder in the editor, save directory otherwise. The save directory has no nested folders, so `/` is replaced with `_` (`logs_game.log`). HTML5 stores it in IndexedDB, not on disk.
+2. **Per-logger file** — `set_file_nearby()` writes only that logger to `<logger_name>.log` next to the script. Editor only: needs `game.project` in the working directory. Returns `nil` on bundled desktop, mobile, and HTML5. If the logger has an auto name, the script basename is used instead.
 
 - Call `log.final()` **once** on application shutdown (from your main/bootstrap script `final`) to flush, close and disable the files. Further messages will not reopen them.
 - `clear_log_files()` deletes known `.log` files from disk.
@@ -374,6 +374,10 @@ log:error("Hello, world!")
 - Fix: `%` inside a message, a context or a logger name no longer breaks the formatting
 - Fix: `force_logger_level_in_debug` is now ignored in release builds, as its name implies
 - Move detailed docs to `docs/CONFIGURATION.md` and `docs/USE_CASES.md`
+
+### **V8**
+- File logging: in the save directory, nested `/` is replaced with `_` (`/logs/game.log` → `logs_game.log`), since `sys.get_save_file` does not create nested folders
+- `set_file_nearby` is editor-only (needs `game.project` in the working directory)
 
 </details>
 

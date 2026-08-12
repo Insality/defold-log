@@ -31,7 +31,7 @@ This configuration section for `game.project` defines various settings:
 | **logger_block_width** | Defines the width of the logger block in log messages. This helps in aligning log messages for better readability. Default is 14.                                                                          | `14` |
 | **max_log_length**  | The maximum length of the log message. If the message exceeds this length, it will be truncated. Default is 1024.                                                                                            | `1024` |
 | **inspect_depth**   | The maximum depth of nested tables to inspect when logging. Default is 2.                                                                                                                                    | `2` |
-| **file**            | Optional global log file for all loggers. Relative path (`/logs/game.log`) → project folder in editor, application save directory on device. Empty disables. Also via `log.set_file(path)`. | _(empty)_ |
+| **file**            | Optional global log file for all loggers. Relative path (`/logs/game.log`) → project folder in the editor, save directory otherwise. The save directory has no nested folders (`sys.get_save_file`), so `/` is replaced with `_` (`logs_game.log`). Empty disables. Also via `log.set_file(path)`. | _(empty)_ |
 
 In the `[log]` configuration section for `game.project`, the `info_block` and `message_block` fields allow for dynamic content based on specific placeholders. These placeholders get replaced with actual log information at runtime, providing structured and informative log messages.
 

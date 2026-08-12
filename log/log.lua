@@ -142,7 +142,8 @@ end
 
 
 ---Set the log file for all loggers, in addition to the console and the personal logger files.
----The path is always relative (`/logs/game.log`): project folder in the editor, save folder on a device.
+---The path is always relative (`/logs/game.log`): project folder in the editor, save folder otherwise.
+---Save folder has no nested dirs (`sys.get_save_file`), so `/` is replaced with `_` (`logs_game.log`).
 ---Pass nil to disable
 ---@param path string|nil
 ---@return string|nil resolved_path
@@ -159,7 +160,7 @@ end
 
 
 ---Write this logger messages to a `<logger_name>.log` file next to the calling script.
----Editor and desktop builds only, since it requires the project folder
+---Editor only: writes next to the script. Returns nil on device / HTML5 / bundled desktop.
 ---@return string|nil resolved_path
 function M:set_file_nearby()
 	return file_writer.set_file_nearby(self, debug.getinfo(2, "S"))

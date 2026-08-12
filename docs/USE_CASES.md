@@ -133,7 +133,7 @@ end)
 ```lua
 local log = require("log.log")
 
--- Always relative: project folder in editor, save directory on device
+-- Always relative: project folder in the editor, save directory otherwise
 log.set_file("/logs/game.log")
 ```
 
@@ -144,14 +144,16 @@ Or zero-code via `game.project`:
 file = /logs/game.log
 ```
 
-### Per-logger file (editor / desktop)
+Outside the editor the file goes to the app save directory. Defold does not create nested folders there, so `/` is replaced with `_` (`logs_game.log`). HTML5 stores it in the browser IndexedDB, not as a real file on disk.
+
+### Per-logger file (editor only)
 
 ```lua
 local logger = log.get_logger("combat")
 logger:set_file_nearby() -- <project>/<script_folder>/<logger_name>.log
 ```
 
-Uses `logger.name` (e.g. `combat.log`). If the logger has an auto name, the script basename is used instead.
+Uses `logger.name` (e.g. `combat.log`). If the logger has an auto name, the script basename is used instead. Returns `nil` outside the editor (bundled desktop, mobile, HTML5).
 
 The shared and the per-logger files can be used together.
 
