@@ -12,17 +12,11 @@ local SOURCE_TO_NAME_MAP = {}
 local UNKNOWN_CALLER = { short_src = "?", currentline = 0 }
 
 
----A gsub replacement string treats `%` as an escape character, so every value
----taken from the game itself has to be escaped before it is inserted
----@param text string
----@return string
-local function escape(text)
-	if string.find(text, "%", 1, true) then
-		return (string.gsub(text, "%%", "%%%%"))
-	end
+-- Placeholder name -> value, reused between the calls
+local INFO_VALUES = {}
+local MESSAGE_VALUES = {}
 
-	return text
-end
+local PLACEHOLDER_PATTERN = "%%([%w_]+)"
 
 
 ---Converts table to one-line string
@@ -102,8 +96,6 @@ function M.format(logger, level, message, context, caller_info)
 	caller_info = caller_info or UNKNOWN_CALLER
 
 	-- Format info block
-	local string_info_block = config.INFO_BLOCK
-
 	if config.IS_MEMORY_TRACK then
 		local format = "%5.1fkb"
 		local current_memory = collectgarbage("count")
@@ -120,7 +112,7 @@ function M.format(logger, level, message, context, caller_info)
 			format = "%4.1f mb"
 		end
 
-		string_info_block = string_m.gsub(string_info_block, "%%memory_tracking", string.format(format, diff_memory))
+		INFO_VALUES.memory_tracking = string.format(format, diff_memory)
 	end
 
 	if config.IS_TIME_TRACK then
@@ -132,7 +124,7 @@ function M.format(logger, level, message, context, caller_info)
 			format = "%6.2f s"
 		end
 
-		string_info_block = string_m.gsub(string_info_block, "%%time_tracking", string.format(format, diff_time))
+		INFO_VALUES.time_tracking = string.format(format, diff_time)
 	end
 
 	if config.IS_CHRONOS_TRACK then
@@ -144,7 +136,7 @@ function M.format(logger, level, message, context, caller_info)
 			format = "%8.4f s"
 		end
 
-		string_info_block = string_m.gsub(string_info_block, "%%chronos_tracking", string.format(format, diff_time))
+		INFO_VALUES.chronos_tracking = string.format(format, diff_time)
 	end
 
 	if config.IS_FORMAT_LOGGER then
@@ -162,29 +154,28 @@ function M.format(logger, level, message, context, caller_info)
 			name_to_insert = string_m.sub(name_to_insert, 1, config.LOGGER_BLOCK_WIDTH)
 		end
 
-		string_info_block = string_m.gsub(string_info_block, "%%logger", escape(name_to_insert))
+		INFO_VALUES.logger = name_to_insert
 	end
 
 	if config.IS_FORMAT_LEVEL_NAME then
-		string_info_block = string_m.gsub(string_info_block, "%%levelname", config.LEVEL_TO_CONSOLE_MAP[level])
+		INFO_VALUES.levelname = config.LEVEL_TO_CONSOLE_MAP[level]
 	end
 
 	if config.IS_FORMAT_LEVEL_SHORT then
-		string_info_block = string_m.gsub(string_info_block, "%%levelshort", config.LEVEL_SHORT_TO_CONSOLE_MAP[level])
+		INFO_VALUES.levelshort = config.LEVEL_SHORT_TO_CONSOLE_MAP[level]
 	end
 
 	-- Format message block
-	local string_message_block = config.MESSAGE_BLOCK
 	if config.IS_FORMAT_TAB then
-		string_message_block = string_m.gsub(string_message_block, "%%tab", "\t")
+		MESSAGE_VALUES.tab = "\t"
 	end
 
 	if config.IS_FORMAT_SPACE then
-		string_message_block = string_m.gsub(string_message_block, "%%space", " ")
+		MESSAGE_VALUES.space = " "
 	end
 
 	if config.IS_FORMAT_MESSAGE then
-		string_message_block = string_m.gsub(string_message_block, "%%message", escape(message))
+		MESSAGE_VALUES.message = message
 	end
 
 	if config.IS_FORMAT_CONTEXT then
@@ -193,13 +184,15 @@ function M.format(logger, level, message, context, caller_info)
 			local is_table = type(context) == "table"
 			record_context = is_table and table_to_string(context, config.INSPECT_DEPTH) or tostring(context)
 		end
-		string_message_block = string_m.gsub(string_message_block, "%%context", escape(record_context))
+		MESSAGE_VALUES.context = record_context
 	end
 
 	if config.IS_FORMAT_FUNCTION then
-		local caller = caller_info.short_src .. ":" .. caller_info.currentline
-		string_message_block = string_m.gsub(string_message_block, "%%function", escape(caller))
+		MESSAGE_VALUES["function"] = caller_info.short_src .. ":" .. caller_info.currentline
 	end
+
+	local string_info_block = string.gsub(config.INFO_BLOCK, PLACEHOLDER_PATTERN, INFO_VALUES)
+	local string_message_block = string.gsub(config.MESSAGE_BLOCK, PLACEHOLDER_PATTERN, MESSAGE_VALUES)
 
 	return string_info_block .. string_message_block
 end

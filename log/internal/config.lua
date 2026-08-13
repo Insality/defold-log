@@ -48,8 +48,7 @@ M.IS_DEBUG = sys.get_engine_info().is_debug
 M.SYSTEM_NAME = sys.get_sys_info().system_name
 M.IS_MOBILE = M.SYSTEM_NAME == "iPhone OS" or M.SYSTEM_NAME == "Android"
 M.IS_HTML5 = M.SYSTEM_NAME == "HTML5"
--- Nested folders via os.execute("mkdir") work on desktop, not on mobile or HTML5
-M.CAN_MKDIR = not M.IS_MOBILE and not M.IS_HTML5
+M.CAN_MKDIR = not M.IS_MOBILE and not M.IS_HTML5 and os.execute ~= nil
 
 M.GAME_LOG_LEVEL = M.IS_DEBUG
 	and sys.get_config_string("log.level", M.TRACE)

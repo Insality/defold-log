@@ -43,7 +43,10 @@ function M:log(level, message, context)
 		file_writer.on_log(self, log_message)
 
 		for index = 1, #callbacks do
-			callbacks[index](self, level, message, context, log_message)
+			local callback = callbacks[index]
+			if callback then
+				callback(self, level, message, context, log_message)
+			end
 		end
 	end
 
@@ -160,7 +163,8 @@ end
 
 
 ---Write this logger messages to a `<logger_name>.log` file next to the calling script.
----Editor only: writes next to the script. Returns nil on device / HTML5 / bundled desktop.
+---Needs `game.project` in the working directory, so it only works when the game is
+---started from the project root: the editor, or a desktop build launched from there
 ---@return string|nil resolved_path
 function M:set_file_nearby()
 	return file_writer.set_file_nearby(self, debug.getinfo(2, "S"))

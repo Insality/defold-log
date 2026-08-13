@@ -44,14 +44,12 @@ local function ensure_parent_dir(filepath)
 		return
 	end
 
-	-- Quotes would break the shell command; strip them from the path
-	dir = dir:gsub('"', "")
-
 	if config.SYSTEM_NAME == "Windows" then
+		dir = dir:gsub('"', "")
 		-- Windows mkdir creates the intermediate folders on its own
 		os.execute('mkdir "' .. dir:gsub("/", "\\") .. '" 2>nul')
-	else
-		os.execute('mkdir -p "' .. dir .. '"')
+	elseif not dir:find("'", 1, true) then
+		os.execute("mkdir -p '" .. dir .. "'")
 	end
 end
 
@@ -109,8 +107,9 @@ local function resolve_path(path)
 end
 
 
----Get the project folder. Editor only: cwd must contain game.project.
----Bundled desktop/mobile/HTML5 return nil.
+---Get the project folder: the shell working directory, if it contains game.project.
+---True in the editor and when a bundled desktop build is started from the project
+---root. Mobile and HTML5 always return nil.
 ---@return string|nil
 function M.get_current_project_folder()
 	if project_folder ~= nil then
@@ -119,7 +118,7 @@ function M.get_current_project_folder()
 
 	project_folder = false
 
-	if io.popen and not config.IS_HTML5 then
+	if io.popen and not config.IS_HTML5 and not config.IS_MOBILE then
 		local file = io.popen(config.SYSTEM_NAME == "Windows" and "cd" or "pwd")
 		local pwd = file and file:read("*l")
 		if file then
@@ -181,7 +180,8 @@ end
 
 
 ---Write this logger messages to a `<logger_name>.log` file next to the calling script.
----Editor only: needs the project folder. Returns nil on device / HTML5 / bundled desktop.
+---Needs the project folder, so it only works when the game is started from the
+---project root: the editor, or a desktop build launched from there. Returns nil otherwise
 ---@param logger logger Logger instance
 ---@param debuginfo debuginfo|nil Caller debug info
 ---@return string|nil resolved_path
