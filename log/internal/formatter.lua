@@ -52,16 +52,16 @@ local function table_to_string(t, depth, result)
 				local convert_result, is_limit = table_to_string(value, depth - 1, "")
 				result = result .. key .. ": {" .. convert_result
 				if is_limit then
-					break
+					return result:sub(1, config.MAX_LOG_LENGTH) .. " ...}", true
 				end
 			end
 		else
 			result = result .. key .. ": " .. tostring(value)
 		end
-	end
 
-	if #result > config.MAX_LOG_LENGTH then
-		return result:sub(1, config.MAX_LOG_LENGTH) .. " ...}", true
+		if #result > config.MAX_LOG_LENGTH then
+			return result:sub(1, config.MAX_LOG_LENGTH) .. " ...}", true
+		end
 	end
 
 	return result .. "}", false

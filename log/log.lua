@@ -30,7 +30,9 @@ function M:log(level, message, context)
 
 	if message then
 		-- The caller is 3 levels up: user code -> logger:info -> logger:log
-		local caller_info = debug.getinfo(3, "Sl")
+		local is_caller_needed = config.IS_FORMAT_FUNCTION
+			or (config.IS_FORMAT_LOGGER and self.name == config.AUTO_NAME)
+		local caller_info = is_caller_needed and debug.getinfo(3, "Sl") or nil
 		local log_message = formatter.format(self, level, message, context, caller_info)
 
 		if config.IS_MOBILE then
@@ -109,6 +111,11 @@ end
 ---@param force_logger_level_in_debug string|nil Debug builds only, values: FATAL, ERROR, WARN, INFO, DEBUG, TRACE
 ---@return logger
 function M.get_logger(logger_name, force_logger_level_in_debug)
+	if config.IS_DEBUG and force_logger_level_in_debug then
+		assert(config.LEVEL_PRIORITY[force_logger_level_in_debug],
+			"log: unknown logger level: " .. tostring(force_logger_level_in_debug))
+	end
+
 	local instance = {
 		name = logger_name or formatter.get_default_logger_name(debug.getinfo(2, "S")),
 		level = config.IS_DEBUG and force_logger_level_in_debug or config.GAME_LOG_LEVEL,

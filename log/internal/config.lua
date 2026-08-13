@@ -54,6 +54,9 @@ M.GAME_LOG_LEVEL = M.IS_DEBUG
 	and sys.get_config_string("log.level", M.TRACE)
 	or sys.get_config_string("log.level_release", M.ERROR)
 
+assert(M.LEVEL_PRIORITY[M.GAME_LOG_LEVEL],
+	"log: unknown log level in game.project: " .. tostring(M.GAME_LOG_LEVEL))
+
 M.LOGGER_BLOCK_WIDTH = sys.get_config_int("log.logger_block_width", 14)
 M.MAX_LOG_LENGTH = sys.get_config_int("log.max_log_length", 1024)
 M.INSPECT_DEPTH = sys.get_config_int("log.inspect_depth", 2)

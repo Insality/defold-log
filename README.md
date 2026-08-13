@@ -379,6 +379,8 @@ log:error("Hello, world!")
 - Fix: file logging in the save directory silently did nothing for a nested path (`/logs/game.log`), since `sys.get_save_file` does not create nested folders. The `/` is now replaced with `_` (`logs_game.log`). Paths in the project folder keep the nesting
 - Fix: a message containing `%context`, `%function` or any other placeholder is no longer expanded as a placeholder
 - Fix: a callback that removes itself (or calls `clear_callbacks`) no longer breaks the log call
+- Fix: an unknown log level in `game.project` or in `get_logger` now reports what is wrong, instead of failing with a comparison error on the first message
+- Fix: a large context table no longer builds the whole string before truncating it to `max_log_length`
 - `set_file_nearby` needs `game.project` in the working directory: the editor, or a desktop build started from the project root
 - Formatting is a single pass over the format string now, with fewer allocations per message
 - The project folder is no longer probed with `io.popen` on mobile, where it can never be found anyway
