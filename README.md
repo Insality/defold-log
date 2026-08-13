@@ -376,12 +376,11 @@ log:error("Hello, world!")
 - Move detailed docs to `docs/CONFIGURATION.md` and `docs/USE_CASES.md`
 
 ### **V8**
-- Fix: file logging in the save directory silently did nothing for a nested path (`/logs/game.log`), since `sys.get_save_file` does not create nested folders. The `/` is now replaced with `_` (`logs_game.log`)
-- **Breaking:** the flattening applies in the save directory on every platform, so a bundled desktop build writes to `<save>/logs_game.log` instead of the `<save>/logs/game.log` it used before
-- A log file that can not be opened is now reported to the console once, instead of disabling itself silently
+- Fix: file logging in the save directory silently did nothing for a nested path (`/logs/game.log`), since `sys.get_save_file` does not create nested folders. The `/` is now replaced with `_` (`logs_game.log`). Paths in the project folder keep the nesting
 - Fix: a message containing `%context`, `%function` or any other placeholder is no longer expanded as a placeholder
 - Fix: a callback that removes itself (or calls `clear_callbacks`) no longer breaks the log call
-- `set_file_nearby` needs `game.project` in the working directory (the editor, or a desktop build started from the project root) and says so when it can not find it
+- `set_file_nearby` needs `game.project` in the working directory: the editor, or a desktop build started from the project root
+- Formatting is a single pass over the format string now, with fewer allocations per message
 - The project folder is no longer probed with `io.popen` on mobile, where it can never be found anyway
 
 </details>

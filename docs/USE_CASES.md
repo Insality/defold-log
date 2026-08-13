@@ -144,7 +144,7 @@ Or zero-code via `game.project`:
 file = /logs/game.log
 ```
 
-Outside the editor the file goes to the app save directory. Defold does not create nested folders there, so `/` is replaced with `_` (`logs_game.log`) on every platform, bundled desktop included. On HTML5 it is written to the browser virtual filesystem, so do not rely on it surviving a page reload.
+Outside the project folder the file goes to the app save directory. Defold does not create nested folders there, so `/` is replaced with `_` (`logs_game.log`). On HTML5 it is written to the browser virtual filesystem, so do not rely on it surviving a page reload.
 
 ### Per-logger file (editor)
 
