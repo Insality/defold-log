@@ -200,6 +200,9 @@ function M.set_file_nearby(logger, debuginfo)
 		name = formatter.get_default_logger_name(debuginfo)
 	end
 
+	-- The logger name is a display string, keep it from turning into a path
+	name = name:gsub('[/\\:*?"<>|]+', "_")
+
 	LOGGER_FILES[logger] = string.format("%s/%s/%s.log", project_path, folder_path, name)
 	return LOGGER_FILES[logger]
 end

@@ -111,9 +111,9 @@ end
 ---@param force_logger_level_in_debug string|nil Debug builds only, values: FATAL, ERROR, WARN, INFO, DEBUG, TRACE
 ---@return logger
 function M.get_logger(logger_name, force_logger_level_in_debug)
-	if config.IS_DEBUG and force_logger_level_in_debug then
-		assert(config.LEVEL_PRIORITY[force_logger_level_in_debug],
-			"log: unknown logger level: " .. tostring(force_logger_level_in_debug))
+	if force_logger_level_in_debug and not config.LEVEL_PRIORITY[force_logger_level_in_debug] then
+		M:error("Unknown logger level, it is ignored", force_logger_level_in_debug)
+		force_logger_level_in_debug = nil
 	end
 
 	local instance = {

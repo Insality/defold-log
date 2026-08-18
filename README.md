@@ -10,7 +10,7 @@
 
 ## Features
 
-- **Log Levels**: Includes TRACE, DEBUG, INFO, WARN, ERROR, and FATAL for varied detail in logging.
+- **Log Levels**: TRACE, DEBUG, INFO, WARN and ERROR for varied detail in logging, and FATAL to silence everything.
 - **Build-specific Logging**: Allows changing log verbosity between debug and release builds.
 - **Detailed Context**: Supports logging with additional information for context, such as variable values or state information.
 - **Format Customization**: Allows customizing the log message format.
@@ -379,8 +379,10 @@ log:error("Hello, world!")
 - Fix: file logging in the save directory silently did nothing for a nested path (`/logs/game.log`), since `sys.get_save_file` does not create nested folders. The `/` is now replaced with `_` (`logs_game.log`). Paths in the project folder keep the nesting
 - Fix: a message containing `%context`, `%function` or any other placeholder is no longer expanded as a placeholder
 - Fix: a callback that removes itself (or calls `clear_callbacks`) no longer breaks the log call
-- Fix: an unknown log level in `game.project` or in `get_logger` now reports what is wrong, instead of failing with a comparison error on the first message
 - Fix: a large context table no longer builds the whole string before truncating it to `max_log_length`
+- Fix: a wrong value in the `[log]` config no longer breaks the game. An unknown log level falls back to the default one, an unknown `force_logger_level_in_debug` is ignored, and both are reported to the console
+- Fix: `%chronos_tracking` without the defold-chronos extension no longer crashes on the first message. It is ignored, and its placeholder is dropped from the format
+- Fix: a logger name with a slash or a Windows-forbidden character no longer leaks into the `set_file_nearby` path
 - `set_file_nearby` needs `game.project` in the working directory: the editor, or a desktop build started from the project root
 - Formatting is a single pass over the format string now, with fewer allocations per message
 - The project folder is no longer probed with `io.popen` on mobile, where it can never be found anyway
