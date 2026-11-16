@@ -10,6 +10,7 @@ This is a default configuration for the Log module, all fields are optional, and
 [log]
 level = TRACE
 level_release = ERROR
+is_console_release = 1
 info_block = %levelname| %time_tracking | %memory_tracking | %logger
 info_block_release = %levelname| %logger
 message_block = | %tab%message: %context %tab<%function>
@@ -25,6 +26,7 @@ This configuration section for `game.project` defines various settings:
 |---------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------| ------------------- |
 | **level**           | Sets the default logging level for development builds. In this case, `TRACE` and above levels will be logged, providing detailed information for debugging and monitoring.                                   | `TRACE`             |
 | **level_release**   | Determines the logging level for release builds, where `ERROR` and above levels will be logged, focusing on warnings and errors that are critical for a production environment. Use `FATAL` to silence all logs. | `ERROR`             |
+| **is_console_release** | `0` stops the console output in **release** builds: no `print` / stdout (on HTML5 stdout goes to the browser console). Callbacks and the log file still get every message of `level_release`, so crash reporters can keep breadcrumbs. Debug builds always write to the console. | `1` |
 | **info_block**      | Defines the format of the info block in log messages for **debug** builds, which includes the log level and logger name in this configuration.                                                               | `%levelname\| %time_tracking \| %memory_tracking \| %logger` |
 | **info_block_release** | Same as `info_block`, but for **release** builds. It is a separate setting so the tracking placeholders (and their runtime cost) are not shipped by accident.                                              | `%levelname\| %logger` |
 | **message_block**   | Sets the format for the message block, including the actual log message, any context provided, and the function from which the log was called.                                                               | `| %tab%message: %context %tab<%function>` |

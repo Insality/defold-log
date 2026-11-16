@@ -56,6 +56,10 @@ if not M.LEVEL_PRIORITY[M.GAME_LOG_LEVEL] then
 	M.GAME_LOG_LEVEL = M.IS_DEBUG and M.TRACE or M.ERROR
 end
 
+-- Release builds can keep the log level (for callbacks and the file) without the console output.
+-- On HTML5 the console output goes to the browser console
+M.IS_CONSOLE = M.IS_DEBUG or sys.get_config_int("log.is_console_release", 1) == 1
+
 M.LOGGER_BLOCK_WIDTH = sys.get_config_int("log.logger_block_width", 14)
 M.MAX_LOG_LENGTH = sys.get_config_int("log.max_log_length", 1024)
 M.INSPECT_DEPTH = sys.get_config_int("log.inspect_depth", 2)

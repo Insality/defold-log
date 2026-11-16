@@ -35,11 +35,8 @@ function M:log(level, message, context)
 		local caller_info = is_caller_needed and debug.getinfo(3, "Sl") or nil
 		local log_message = formatter.format(self, level, message, context, caller_info)
 
-		if config.IS_MOBILE then
-			print(log_message)
-		else
-			io.stdout:write(log_message, "\n")
-			io.stdout:flush()
+		if config.IS_CONSOLE then
+			M._write_console(log_message)
 		end
 
 		file_writer.on_log(self, log_message)
@@ -189,6 +186,19 @@ end
 ---Further log messages will not reopen the files until `set_file` / `set_file_nearby` is called again
 function M.final()
 	file_writer.final()
+end
+
+
+---Mobile writes through `print` (logcat, Xcode), desktop and HTML5 through stdout
+---@private
+---@param log_message string
+function M._write_console(log_message)
+	if config.IS_MOBILE then
+		print(log_message)
+	else
+		io.stdout:write(log_message, "\n")
+		io.stdout:flush()
+	end
 end
 
 

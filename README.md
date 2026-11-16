@@ -386,6 +386,7 @@ log:error("Hello, world!")
 - `set_file_nearby` needs `game.project` in the working directory: the editor, or a desktop build started from the project root
 - Formatting is a single pass over the format string now, with fewer allocations per message
 - The project folder is no longer probed with `io.popen` on mobile, where it can never be found anyway
+- Add `is_console_release` setting: `0` stops the console output in release builds (the browser console on HTML5), callbacks and the log file still get the messages
 
 </details>
 
